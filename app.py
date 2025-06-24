@@ -25,7 +25,8 @@ def password_valid(password: str) -> bool:
     )
 
 # ---------------- HANDLE RESET PASSWORD FLOW ----------------
-query_params = st.query_params
+#query_params = st.query_params
+query_params = st.experimental_get_query_params()
 access_token = query_params.get("access_token", [None])[0]
 type_param = query_params.get("type", [None])[0]
 
