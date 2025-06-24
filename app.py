@@ -2,20 +2,20 @@ import streamlit as st
 from supabase import create_client, Client
 import re
 
-# 🔧 Supabase credentials
+# Supabase credentials
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_ANON_KEY = st.secrets["SUPABASE_ANON_KEY"]
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 st.set_page_config(page_title="Secure Login", page_icon="🔐")
 
-# ---------------- SESSION STATE SETUP ----------------
+# Session state
 if "user" not in st.session_state:
     st.session_state.user = None
 if "session" not in st.session_state:
     st.session_state.session = None
 
-# ---------------- PASSWORD VALIDATION ----------------
+# Password validation
 def password_valid(password: str) -> bool:
     return (
         len(password) >= 8 and
@@ -24,13 +24,12 @@ def password_valid(password: str) -> bool:
         re.search(r"[!@#$%^&*(),.?\":{}|<>]", password)
     )
 
-# ---------------- HANDLE PASSWORD RESET VIA QUERY PARAMS ----------------
-params = st.query_params
-access_token = params.get("access_token", [None])[0]
-type_param = params.get("type", [None])[0]
-in_reset_flow = access_token is not None and type_param == "recovery"
+# Handle password reset from email link
+query_params = st.query_params
+access_token = query_params.get("access_token", [None])[0]
+type_param = query_params.get("type", [None])[0]
 
-if in_reset_flow:
+if access_token and type_param == "recovery":
     st.title("🔒 Reset Your Password")
     new_pw = st.text_input("Enter new password", type="password")
     confirm_pw = st.text_input("Confirm new password", type="password")
@@ -39,44 +38,38 @@ if in_reset_flow:
         if new_pw != confirm_pw:
             st.error("❌ Passwords do not match.")
         elif not password_valid(new_pw):
-            st.error("❌ Password must be 8+ characters, include a letter, a number, and a special character.")
+            st.error("❌ Password must be 8+ characters, include a letter, number, and special character.")
         else:
             try:
-                session_response = supabase.auth.set_session(access_token, access_token)
-
-                if not session_response or not session_response.user:
-                    st.error("❌ Invalid session during password reset.")
-                    st.stop()
-
-                update_response = supabase.auth.update_user({"password": new_pw})
-
-                if hasattr(update_response, "error") and update_response.error:
-                    st.error(f"❌ Failed to update password: {update_response.error.message}")
+                session = supabase.auth.set_session(access_token, access_token)
+                if session.user is None:
+                    st.error("❌ Invalid session during reset.")
                 else:
-                    st.session_state.user = session_response.user
-                    st.session_state.session = session_response.session
-                    st.success("✅ Password updated successfully. You are now logged in.")
-                    st.experimental_set_query_params()  # Clear query params
-                    st.experimental_rerun()
+                    res = supabase.auth.update_user({"password": new_pw})
+                    if res.user:
+                        st.session_state.user = res.user
+                        st.session_state.session = session.session
+                        st.success("✅ Password reset successful!")
+                        st.experimental_set_query_params()  # clear URL
+                        st.rerun()
+                    else:
+                        st.error("❌ Password reset failed.")
             except Exception as e:
                 st.error(f"❌ Failed to reset password: {e}")
-
     st.stop()
 
-# ---------------- LOGGED IN VIEW ----------------
+# Logged in view
 if st.session_state.user:
     st.title("✅ You are logged in")
     st.write(f"📧 Email: `{st.session_state.user['email']}`")
-
     if st.button("Logout"):
         st.session_state.user = None
         st.session_state.session = None
         st.rerun()
 
-# ---------------- LOGIN / SIGN UP ----------------
+# Login / Sign Up view
 else:
     st.title("🔐 Welcome to the App")
-
     mode = st.radio("Choose an option:", ["Login", "Sign Up"])
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
@@ -92,25 +85,23 @@ else:
                 st.error("❌ Password does not meet the requirements.")
             else:
                 res = supabase.auth.sign_up({"email": email, "password": password})
-                if "error" in res.__dict__ and res.__dict__["error"]:
-                    st.error(f"❌ {res.__dict__['error'].message}")
+                if res.user:
+                    st.success("✅ Account created! Check your email to confirm.")
                 else:
-                    st.success("✅ Account created! Check your email to confirm before logging in.")
+                    st.error(f"❌ {res.error.message if res.error else 'Signup failed.'}")
 
     elif mode == "Login":
         if st.button("Login"):
             res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-            if "error" in res.__dict__ and res.__dict__["error"]:
-                st.error(f"❌ {res.__dict__['error'].message}")
-            elif "session" in res.__dict__ and res.__dict__["session"]:
+            if res.session:
+                st.session_state.user = res.user
+                st.session_state.session = res.session
                 st.success("✅ Logged in successfully!")
-                st.session_state.user = res.__dict__["user"].model_dump()
-                st.session_state.session = res.__dict__["session"]
                 st.rerun()
             else:
-                st.error("❌ Login failed. Unknown issue.")
+                st.error(f"❌ {res.error.message if res.error else 'Login failed.'}")
 
-    # ---------------- RESET PASSWORD ----------------
+    # Password reset flow
     with st.expander("🔁 Forgot your password?"):
         reset_email = st.text_input("Enter your email to reset password", key="reset_email_input")
         if st.button("Send Reset Link", key="send_reset_button"):
