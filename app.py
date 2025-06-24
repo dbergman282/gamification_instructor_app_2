@@ -25,9 +25,9 @@ def password_valid(password: str) -> bool:
     )
 
 # ---------------- HANDLE PASSWORD RESET FLOW ----------------
-query_params = st.experimental_get_query_params()  # Avoid using st.query_params to prevent UI warning
-access_token = query_params.get("access_token", [None])[0]
-type_param = query_params.get("type", [None])[0]
+query_params = st.query_params or {}
+access_token = query_params.get("access_token")
+type_param = query_params.get("type")
 
 if access_token and type_param == "recovery":
     st.title("🔒 Reset Your Password")
@@ -47,7 +47,7 @@ if access_token and type_param == "recovery":
                 st.session_state.user = session.user
                 st.session_state.session = session.session
                 st.success("✅ Password updated successfully. You are now logged in.")
-                st.experimental_set_query_params()  # Clear query params
+                st.query_params.clear()
                 st.rerun()
             except Exception as e:
                 st.error(f"❌ Failed to reset password: {e}")
