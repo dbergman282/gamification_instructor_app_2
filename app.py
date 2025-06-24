@@ -28,28 +28,35 @@ def password_valid(password: str) -> bool:
 params = st.query_params
 access_token = params.get("access_token", None)
 type_param = params.get("type", None)
-
 if access_token and type_param == "recovery":
     st.title("🔒 Reset Your Password")
+
+    st.write(f"Debug: access_token = {access_token}")
+    st.write("✅ Entering password reset form...")
 
     new_pw = st.text_input("Enter new password", type="password")
     confirm_pw = st.text_input("Confirm new password", type="password")
 
     if st.button("Update Password"):
+        st.write("🔄 Update Password clicked")
+        st.write(f"new_pw = {new_pw}, confirm_pw = {confirm_pw}")
+
         if new_pw != confirm_pw:
             st.error("❌ Passwords do not match.")
         elif not password_valid(new_pw):
             st.error("❌ Password must have 8+ characters, a letter, a number, and a special character.")
         else:
             try:
-                # Set session
+                st.write("🔑 Calling supabase.auth.set_session()...")
                 session_response = supabase.auth.set_session(access_token, access_token)
+                st.write(f"set_session result: {session_response}")
 
                 if not session_response or not session_response.user:
                     st.error("❌ Failed to validate session with token.")
                 else:
-                    # Now update the password
+                    st.write("🛠️ Session valid, updating password...")
                     update_response = supabase.auth.update_user({"password": new_pw})
+                    st.write(f"update_user result: {update_response}")
 
                     if update_response and update_response.user:
                         st.success("✅ Password updated successfully. You are now logged in.")
@@ -60,7 +67,8 @@ if access_token and type_param == "recovery":
                     else:
                         st.error("❌ Password update failed.")
             except Exception as e:
-                st.error(f"❌ Error: {e}")
+                st.write("⚠️ Exception caught!")
+                st.exception(e)  # This will show the full traceback
     st.stop()
 
 # ---------------- LOGGED IN VIEW ----------------
