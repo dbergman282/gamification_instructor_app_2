@@ -24,7 +24,7 @@ def password_valid(password: str) -> bool:
         re.search(r"[!@#$%^&*(),.?\":{}|<>]", password)
     )
 
-# ---------------- HANDLE PASSWORD RESET FLOW ----------------
+# ---------------- HANDLE RESET PASSWORD FLOW ----------------
 query_params = st.query_params or {}
 access_token = query_params.get("access_token")
 type_param = query_params.get("type")
