@@ -83,7 +83,7 @@ else:
             res = supabase.auth.reset_password_for_email({
                 "email": reset_email,
                 "options": {
-                    "redirect_to": "https://gamification-instructor-app-2.streamlit.app"
+                    "redirectTo": "https://gamification-instructor-app-2.streamlit.app"
                 }
             })
             if "error" in res.__dict__ and res.__dict__["error"]:
