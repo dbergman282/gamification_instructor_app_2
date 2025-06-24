@@ -24,7 +24,7 @@ def password_valid(password: str) -> bool:
         re.search(r"[!@#$%^&*(),.?\":{}|<>]", password)
     )
 
-# ---------------- HANDLE PASSWORD RESET FORM IF URL TOKEN PRESENT ----------------
+# ---------------- HANDLE PASSWORD RESET FLOW ----------------
 params = st.query_params
 access_token = params.get("access_token")
 type_param = params.get("type")
@@ -42,16 +42,26 @@ if access_token and type_param == "recovery":
             st.error("❌ Password must be 8+ characters, include a letter, a number, and a special character.")
         else:
             try:
-                session = supabase.auth.set_session(access_token, access_token)
-                supabase.auth.update_user({"password": new_pw})
-                st.session_state.user = session.user
-                st.session_state.session = session.session
-                st.success("✅ Password updated successfully. You are now logged in.")
-                st.query_params.clear()
-                st.rerun()
+                session_response = supabase.auth.set_session(access_token, access_token)
+
+                if not session_response or not hasattr(session_response, "user") or session_response.user is None:
+                    st.error("❌ Invalid session during password reset.")
+                    st.stop()
+
+                update_response = supabase.auth.update_user({"password": new_pw})
+
+                if hasattr(update_response, "error") and update_response.error:
+                    st.error(f"❌ Failed to update password: {update_response.error.message}")
+                else:
+                    st.session_state.user = session_response.user
+                    st.session_state.session = session_response.session
+                    st.success("✅ Password updated successfully. You are now logged in.")
+                    st.query_params.clear()
+                    st.rerun()
             except Exception as e:
                 st.error(f"❌ Failed to reset password: {e}")
     st.stop()
+
 
 # ---------------- LOGGED IN VIEW ----------------
 if st.session_state.user:
