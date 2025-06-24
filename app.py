@@ -94,5 +94,4 @@ else:
                 st.error(f"❌ Reset failed: {e}")
                     else:
                         st.success("✅ Check your email for the reset link.")
-            except Exception as e:
-                st.error(f"❌ Reset failed: {e}")
+
