@@ -82,7 +82,7 @@ else:
         if st.button("Send Reset Link"):
             res = supabase.auth.reset_password_for_email(
                 email=reset_email,
-                redirect_to="https://your-app.streamlit.app"
+                redirect_to="https://gamification-instructor-app-2.streamlit.app"
             )
             if "error" in res.__dict__ and res.__dict__["error"]:
                 st.error("❌ " + res.__dict__["error"].message)
