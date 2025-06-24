@@ -2,7 +2,7 @@ import streamlit as st
 from supabase import create_client, Client
 import re
 
-# 🔧 Supabase credentials from Streamlit secrets
+# 🔧 Supabase credentials
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_ANON_KEY = st.secrets["SUPABASE_ANON_KEY"]
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -24,14 +24,14 @@ def password_valid(password: str) -> bool:
         re.search(r"[!@#$%^&*(),.?\":{}|<>]", password)
     )
 
-# ---------------- HANDLE PASSWORD RESET FLOW ----------------
+# ---------------- HANDLE PASSWORD RESET VIA QUERY PARAMS ----------------
 params = st.query_params
 access_token = params.get("access_token", [None])[0]
 type_param = params.get("type", [None])[0]
+in_reset_flow = access_token is not None and type_param == "recovery"
 
-if access_token and type_param == "recovery":
+if in_reset_flow:
     st.title("🔒 Reset Your Password")
-
     new_pw = st.text_input("Enter new password", type="password")
     confirm_pw = st.text_input("Confirm new password", type="password")
 
@@ -56,13 +56,12 @@ if access_token and type_param == "recovery":
                     st.session_state.user = session_response.user
                     st.session_state.session = session_response.session
                     st.success("✅ Password updated successfully. You are now logged in.")
-                    st.query_params.clear()
-                    st.rerun()
+                    st.experimental_set_query_params()  # Clear query params
+                    st.experimental_rerun()
             except Exception as e:
                 st.error(f"❌ Failed to reset password: {e}")
+
     st.stop()
-
-
 
 # ---------------- LOGGED IN VIEW ----------------
 if st.session_state.user:
@@ -74,7 +73,7 @@ if st.session_state.user:
         st.session_state.session = None
         st.rerun()
 
-# ---------------- LOGIN / SIGN UP VIEW ----------------
+# ---------------- LOGIN / SIGN UP ----------------
 else:
     st.title("🔐 Welcome to the App")
 
@@ -93,25 +92,25 @@ else:
                 st.error("❌ Password does not meet the requirements.")
             else:
                 res = supabase.auth.sign_up({"email": email, "password": password})
-                if res and hasattr(res, "error") and res.error:
-                    st.error(f"❌ {res.error.message}")
+                if "error" in res.__dict__ and res.__dict__["error"]:
+                    st.error(f"❌ {res.__dict__['error'].message}")
                 else:
                     st.success("✅ Account created! Check your email to confirm before logging in.")
 
     elif mode == "Login":
         if st.button("Login"):
             res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-            if res and hasattr(res, "error") and res.error:
-                st.error(f"❌ {res.error.message}")
-            elif res and hasattr(res, "session") and res.session:
+            if "error" in res.__dict__ and res.__dict__["error"]:
+                st.error(f"❌ {res.__dict__['error'].message}")
+            elif "session" in res.__dict__ and res.__dict__["session"]:
                 st.success("✅ Logged in successfully!")
-                st.session_state.user = res.user.model_dump()
-                st.session_state.session = res.session
+                st.session_state.user = res.__dict__["user"].model_dump()
+                st.session_state.session = res.__dict__["session"]
                 st.rerun()
             else:
                 st.error("❌ Login failed. Unknown issue.")
 
-    # ---------------- RESET PASSWORD REQUEST ----------------
+    # ---------------- RESET PASSWORD ----------------
     with st.expander("🔁 Forgot your password?"):
         reset_email = st.text_input("Enter your email to reset password", key="reset_email_input")
         if st.button("Send Reset Link", key="send_reset_button"):
@@ -120,7 +119,7 @@ else:
                     email=reset_email,
                     options={"redirect_to": "https://gamificationinstructorapp.streamlit.app"}
                 )
-                if res and hasattr(res, "error") and res.error:
+                if hasattr(res, "error") and res.error:
                     st.error(f"❌ {res.error.message}")
                 else:
                     st.success("✅ Check your email for the reset link.")
