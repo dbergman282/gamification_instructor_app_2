@@ -9,7 +9,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 st.set_page_config(page_title="Secure Login", page_icon="🔐")
 
-# ---------------- SESSION STATE SETUP ----------------
+# ---------------- SESSION STATE ----------------
 if "user" not in st.session_state:
     st.session_state.user = None
 if "session" not in st.session_state:
@@ -24,12 +24,12 @@ def password_valid(password: str) -> bool:
         re.search(r"[!@#$%^&*(),.?\":{}|<>]", password)
     )
 
-# ---------------- HANDLE PASSWORD RESET FROM LINK ----------------
+# ---------------- HANDLE RESET PASSWORD ----------------
 params = st.query_params
-access_token = params.get("access_token")
-type_param = params.get("type")
+access_token = params.get("access_token", None)
+type_param = params.get("type", None)
 
-if access_token is not None and type_param == "recovery":
+if access_token and type_param == "recovery":
     st.title("🔒 Reset Your Password")
 
     new_pw = st.text_input("Enter new password", type="password")
@@ -42,15 +42,25 @@ if access_token is not None and type_param == "recovery":
             st.error("❌ Password must have 8+ characters, a letter, a number, and a special character.")
         else:
             try:
-                session = supabase.auth.set_session(access_token, access_token)
-                supabase.auth.update_user({"password": new_pw})
-                st.session_state.user = session.user
-                st.session_state.session = session.session
-                st.success("✅ Password updated successfully. You are now logged in.")
-                st.query_params.clear()
-                st.rerun()
+                # Set session
+                session_response = supabase.auth.set_session(access_token, access_token)
+
+                if not session_response or not session_response.user:
+                    st.error("❌ Failed to validate session with token.")
+                else:
+                    # Now update the password
+                    update_response = supabase.auth.update_user({"password": new_pw})
+
+                    if update_response and update_response.user:
+                        st.success("✅ Password updated successfully. You are now logged in.")
+                        st.session_state.user = update_response.user
+                        st.session_state.session = session_response.session
+                        st.query_params.clear()
+                        st.rerun()
+                    else:
+                        st.error("❌ Password update failed.")
             except Exception as e:
-                st.error(f"❌ Failed to reset password: {e}")
+                st.error(f"❌ Error: {e}")
     st.stop()
 
 # ---------------- LOGGED IN VIEW ----------------
