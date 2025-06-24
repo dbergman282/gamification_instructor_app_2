@@ -76,16 +76,33 @@ else:
             else:
                 st.error("❌ Login failed. Unknown issue.")
 
-    # ---------------- RESET PASSWORD ----------------
-    with st.expander("🔁 Forgot your password?"):
-        reset_email = st.text_input("Enter your email to reset password")
-        if st.button("Send Reset Link"):
-            try:
-                res = supabase.auth.reset_password_for_email(reset_email)
+    # # ---------------- RESET PASSWORD ----------------
+    # with st.expander("🔁 Forgot your password?"):
+    #     reset_email = st.text_input("Enter your email to reset password")
+    #     if st.button("Send Reset Link"):
+    #         try:
+    #             res = supabase.auth.reset_password_for_email(reset_email)
     
+    #             if hasattr(res, "error") and res.error:
+    #                 st.error(f"❌ {res.error.message}")
+    #             else:
+    #                 st.success("✅ Check your email for the reset link.")
+    #         except Exception as e:
+    #             st.error(f"❌ Reset failed: {e}")
+# ---------------- RESET PASSWORD ----------------
+    with st.expander("🔁 Forgot your password?"):
+        reset_email = st.text_input("Enter your email to reset password", key="reset_email_input")
+        if st.button("Send Reset Link", key="send_reset_button"):
+            try:
+                res = supabase.auth.reset_password_for_email(
+                    email=reset_email,
+                    options={"redirect_to": "https://gamificationinstructorapp.streamlit.app"}
+                )
+    
+                # If there's an error in the response object
                 if hasattr(res, "error") and res.error:
                     st.error(f"❌ {res.error.message}")
                 else:
                     st.success("✅ Check your email for the reset link.")
             except Exception as e:
-                st.error(f"❌ Reset failed: {e}")
+            st.error(f"❌ Reset failed: {e}")
