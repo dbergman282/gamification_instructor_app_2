@@ -25,7 +25,7 @@ def password_valid(password: str) -> bool:
     )
 
 # ---------------- HANDLE RESET PASSWORD TOKEN ----------------
-query_params = st.experimental_get_query_params()
+query_params = st.query_params
 access_token = query_params.get("access_token", [None])[0]
 type_param = query_params.get("type", [None])[0]
 
@@ -47,11 +47,11 @@ if access_token and type_param == "recovery":
                 st.session_state.user = session.user
                 st.session_state.session = session.session
                 st.success("✅ Password updated successfully. You are now logged in.")
-                st.experimental_set_query_params()  # Clear URL
+                st.query_params.clear()  # Clear URL parameters
                 st.rerun()
             except Exception as e:
                 st.error(f"❌ Failed to reset password: {e}")
-    st.stop()  # Don't show login/signup when resetting password
+    st.stop()
 
 # ---------------- LOGGED IN VIEW ----------------
 if st.session_state.user:
