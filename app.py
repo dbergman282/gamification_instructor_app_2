@@ -25,9 +25,16 @@ def password_valid(password: str) -> bool:
     )
 
 # ---------------- HANDLE RESET PASSWORD FLOW ----------------
-query_params = st.query_params or {}
-access_token = query_params.get("access_token")
-type_param = query_params.get("type")
+# query_params = st.query_params or {}
+# access_token = query_params.get("access_token")
+# type_param = query_params.get("type")
+
+query_params = st.query_params
+access_token_list = query_params.get("access_token", [])
+type_param_list = query_params.get("type", [])
+
+access_token = access_token_list[0] if access_token_list else None
+type_param = type_param_list[0] if type_param_list else None
 
 if access_token and type_param == "recovery":
     st.title("🔒 Reset Your Password")
