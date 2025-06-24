@@ -81,10 +81,16 @@ else:
         reset_email = st.text_input("Enter your email to reset password")
         if st.button("Send Reset Link"):
             try:
-                res = supabase.auth.reset_password_for_email(
-                    email=reset_email,
-                    redirect_to="https://gamification-instructor-app-2.streamlit.app"
-                )
-                st.success("✅ Check your email for the reset link.")
+                res = supabase.auth.reset_password_for_email({
+                    "email": reset_email,
+                    "options": {
+                        "redirectTo": "https://gamification-instructor-app-2.streamlit.app"
+                    }
+                })
+    
+                if hasattr(res, "error") and res.error:
+                    st.error(f"❌ {res.error.message}")
+                else:
+                    st.success("✅ Check your email for the reset link.")
             except Exception as e:
                 st.error(f"❌ Reset failed: {e}")
