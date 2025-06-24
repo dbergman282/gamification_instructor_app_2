@@ -1,9 +1,8 @@
 import streamlit as st
 from supabase import create_client, Client
 import re
-import os
 
-# 🔧 Supabase credentials
+# 🔧 Supabase credentials from Streamlit secrets
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_ANON_KEY = st.secrets["SUPABASE_ANON_KEY"]
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -16,31 +15,43 @@ if "user" not in st.session_state:
 if "session" not in st.session_state:
     st.session_state.session = None
 
-# ---------------- HANDLE PASSWORD RESET REDIRECT ----------------
+# ---------------- PASSWORD VALIDATION ----------------
+def password_valid(password: str) -> bool:
+    return (
+        len(password) >= 8 and
+        re.search(r"[A-Za-z]", password) and
+        re.search(r"\d", password) and
+        re.search(r"[!@#$%^&*(),.?\":{}|<>]", password)
+    )
+
+# ---------------- HANDLE RESET PASSWORD TOKEN ----------------
 query_params = st.experimental_get_query_params()
 access_token = query_params.get("access_token", [None])[0]
 type_param = query_params.get("type", [None])[0]
 
 if access_token and type_param == "recovery":
-    try:
-        session = supabase.auth.set_session(access_token, access_token)
-        st.session_state.user = session.user
-        st.session_state.session = session.session
-        st.success("✅ Password reset successful. You're now logged in!")
-    except Exception as e:
-        st.error(f"❌ Failed to complete login after password reset: {e}")
+    st.title("🔒 Reset Your Password")
 
-# ---------------- PASSWORD VALIDATION ----------------
-def password_valid(password: str) -> bool:
-    if len(password) < 8:
-        return False
-    if not re.search(r"[A-Za-z]", password):
-        return False
-    if not re.search(r"\d", password):
-        return False
-    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
-        return False
-    return True
+    new_pw = st.text_input("Enter new password", type="password")
+    confirm_pw = st.text_input("Confirm new password", type="password")
+
+    if st.button("Update Password"):
+        if new_pw != confirm_pw:
+            st.error("❌ Passwords do not match.")
+        elif not password_valid(new_pw):
+            st.error("❌ Password must have 8+ characters, a letter, a number, and a special character.")
+        else:
+            try:
+                session = supabase.auth.set_session(access_token, access_token)
+                supabase.auth.update_user({"password": new_pw})
+                st.session_state.user = session.user
+                st.session_state.session = session.session
+                st.success("✅ Password updated successfully. You are now logged in.")
+                st.experimental_set_query_params()  # Clear URL
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ Failed to reset password: {e}")
+    st.stop()  # Don't show login/signup when resetting password
 
 # ---------------- LOGGED IN VIEW ----------------
 if st.session_state.user:
@@ -64,7 +75,7 @@ else:
         st.markdown("""
         🔐 **Password requirements:**
         - At least 8 characters  
-        - Must include a **letter**, a **number**, and a **special character** (like `!`, `@`, `#`)
+        - Must include a **letter**, a **number**, and a **special character**
         """)
         if st.button("Create Account"):
             if not password_valid(password):
@@ -98,7 +109,6 @@ else:
                     email=reset_email,
                     options={"redirect_to": "https://gamificationinstructorapp.streamlit.app"}
                 )
-
                 if hasattr(res, "error") and res.error:
                     st.error(f"❌ {res.error.message}")
                 else:
