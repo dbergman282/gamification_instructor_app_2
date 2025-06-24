@@ -1,21 +1,34 @@
 import streamlit as st
 from supabase import create_client, Client
 import re
+import os
 
-# 🔧 Replace with your real Supabase credentials
+# 🔧 Supabase credentials
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_ANON_KEY = st.secrets["SUPABASE_ANON_KEY"]
-
-
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 st.set_page_config(page_title="Secure Login", page_icon="🔐")
 
-# ---------------- SETUP SESSION STATE ----------------
+# ---------------- SESSION STATE SETUP ----------------
 if "user" not in st.session_state:
     st.session_state.user = None
 if "session" not in st.session_state:
     st.session_state.session = None
+
+# ---------------- HANDLE PASSWORD RESET REDIRECT ----------------
+query_params = st.experimental_get_query_params()
+access_token = query_params.get("access_token", [None])[0]
+type_param = query_params.get("type", [None])[0]
+
+if access_token and type_param == "recovery":
+    try:
+        session = supabase.auth.set_session(access_token, access_token)
+        st.session_state.user = session.user
+        st.session_state.session = session.session
+        st.success("✅ Password reset successful. You're now logged in!")
+    except Exception as e:
+        st.error(f"❌ Failed to complete login after password reset: {e}")
 
 # ---------------- PASSWORD VALIDATION ----------------
 def password_valid(password: str) -> bool:
@@ -76,20 +89,7 @@ else:
             else:
                 st.error("❌ Login failed. Unknown issue.")
 
-    # # ---------------- RESET PASSWORD ----------------
-    # with st.expander("🔁 Forgot your password?"):
-    #     reset_email = st.text_input("Enter your email to reset password")
-    #     if st.button("Send Reset Link"):
-    #         try:
-    #             res = supabase.auth.reset_password_for_email(reset_email)
-    
-    #             if hasattr(res, "error") and res.error:
-    #                 st.error(f"❌ {res.error.message}")
-    #             else:
-    #                 st.success("✅ Check your email for the reset link.")
-    #         except Exception as e:
-    #             st.error(f"❌ Reset failed: {e}")
-# ---------------- RESET PASSWORD ----------------
+    # ---------------- RESET PASSWORD ----------------
     with st.expander("🔁 Forgot your password?"):
         reset_email = st.text_input("Enter your email to reset password", key="reset_email_input")
         if st.button("Send Reset Link", key="send_reset_button"):
@@ -98,8 +98,7 @@ else:
                     email=reset_email,
                     options={"redirect_to": "https://gamificationinstructorapp.streamlit.app"}
                 )
-    
-                # If there's an error in the response object
+
                 if hasattr(res, "error") and res.error:
                     st.error(f"❌ {res.error.message}")
                 else:
