@@ -31,7 +31,6 @@ type_param = query_params.get("type")
 
 if access_token and type_param == "recovery":
     st.title("🔒 Reset Your Password")
-
     new_pw = st.text_input("Enter new password", type="password")
     confirm_pw = st.text_input("Confirm new password", type="password")
 
@@ -42,10 +41,6 @@ if access_token and type_param == "recovery":
             st.error("❌ Password must have 8+ characters, a letter, a number, and a special character.")
         else:
             try:
-                # Ensure token looks valid (has at least 3 JWT parts)
-                if len(access_token.split(".")) != 3:
-                    raise ValueError("Access token is malformed.")
-
                 session_response = supabase.auth.set_session(access_token, access_token)
                 supabase.auth.update_user({"password": new_pw})
                 st.session_state.user = session_response.user
@@ -86,7 +81,7 @@ else:
                 st.error("❌ Password does not meet the requirements.")
             else:
                 res = supabase.auth.sign_up({"email": email, "password": password})
-                if hasattr(res, "error") and res.error:
+                if res.error:
                     st.error(f"❌ {res.error.message}")
                 else:
                     st.success("✅ Account created! Check your email to confirm before logging in.")
@@ -94,9 +89,9 @@ else:
     elif mode == "Login":
         if st.button("Login"):
             res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-            if hasattr(res, "error") and res.error:
+            if res.error:
                 st.error(f"❌ {res.error.message}")
-            elif hasattr(res, "session") and res.session:
+            elif res.session:
                 st.success("✅ Logged in successfully!")
                 st.session_state.user = res.user.model_dump()
                 st.session_state.session = res.session
@@ -109,15 +104,12 @@ else:
         reset_email = st.text_input("Enter your email to reset password", key="reset_email_input")
         if st.button("Send Reset Link", key="send_reset_button"):
             try:
-                response = supabase.auth.reset_password_for_email(
+                res = supabase.auth.reset_password_for_email(
                     email=reset_email,
                     options={"redirect_to": "https://gamificationinstructorapp.streamlit.app"}
                 )
-
-                if response is None:
-                    st.error("❌ Reset failed: No response from Supabase.")
-                elif hasattr(response, "error") and response.error:
-                    st.error(f"❌ {response.error.message}")
+                if res.error:
+                    st.error(f"❌ {res.error.message}")
                 else:
                     st.success("✅ Check your email for the reset link.")
             except Exception as e:
