@@ -26,8 +26,8 @@ def password_valid(password: str) -> bool:
 
 # ---------------- HANDLE PASSWORD RESET FLOW ----------------
 params = st.query_params
-access_token = params.get("access_token")
-type_param = params.get("type")
+access_token = params.get("access_token", [None])[0]
+type_param = params.get("type", [None])[0]
 
 if access_token and type_param == "recovery":
     st.title("🔒 Reset Your Password")
@@ -44,7 +44,7 @@ if access_token and type_param == "recovery":
             try:
                 session_response = supabase.auth.set_session(access_token, access_token)
 
-                if not session_response or not hasattr(session_response, "user") or session_response.user is None:
+                if not session_response or not session_response.user:
                     st.error("❌ Invalid session during password reset.")
                     st.stop()
 
@@ -61,6 +61,7 @@ if access_token and type_param == "recovery":
             except Exception as e:
                 st.error(f"❌ Failed to reset password: {e}")
     st.stop()
+
 
 
 # ---------------- LOGGED IN VIEW ----------------
