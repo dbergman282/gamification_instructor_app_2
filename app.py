@@ -6,6 +6,8 @@ import re
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_ANON_KEY = st.secrets["SUPABASE_ANON_KEY"]
 
+
+
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 st.set_page_config(page_title="Secure Login", page_icon="🔐")
@@ -43,8 +45,8 @@ if mode == "Sign Up":
             st.error("❌ Password does not meet the requirements.")
         else:
             res = supabase.auth.sign_up({"email": email, "password": password})
-            if res.error:
-                st.error(f"❌ {res.error.message}")
+            if "error" in res.__dict__ and res.__dict__["error"]:
+                st.error(f"❌ {res.__dict__['error'].message}")
             else:
                 st.success("✅ Account created! Check your email to confirm before logging in.")
 
@@ -52,12 +54,12 @@ if mode == "Sign Up":
 elif mode == "Login":
     if st.button("Login"):
         res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-        if res.error:
-            st.error(f"❌ {res.error.message}")
-        elif res.session:
+        if "error" in res.__dict__ and res.__dict__["error"]:
+            st.error(f"❌ {res.__dict__['error'].message}")
+        elif "session" in res.__dict__ and res.__dict__["session"]:
             st.success("✅ Logged in successfully!")
             st.write("🔍 User info:")
-            st.json(res.user.model_dump())
+            st.json(res.__dict__["user"].model_dump())
         else:
             st.error("❌ Login failed. Unknown issue.")
 
@@ -67,9 +69,9 @@ with st.expander("🔁 Forgot your password?"):
     if st.button("Send Reset Link"):
         res = supabase.auth.reset_password_for_email(
             email=reset_email,
-            redirect_to="https://your-app.streamlit.app"  # Replace with your deployed URL
+            redirect_to="https://your-app.streamlit.app"  # Change to your actual Streamlit Cloud URL
         )
-        if res.error:
-            st.error("❌ " + res.error.message)
+        if "error" in res.__dict__ and res.__dict__["error"]:
+            st.error("❌ " + res.__dict__["error"].message)
         else:
             st.success("✅ Check your email for the reset link.")
