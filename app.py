@@ -25,8 +25,9 @@ def password_valid(password: str) -> bool:
     )
 
 # ---------------- HANDLE RESET PASSWORD FLOW ----------------
-access_token = st.query_params.get("access_token")
-type_param = st.query_params.get("type")
+query_params = st.query_params or {}
+access_token = query_params.get("access_token")
+type_param = query_params.get("type")
 
 if access_token and type_param == "recovery":
     st.title("🔒 Reset Your Password")
@@ -42,19 +43,23 @@ if access_token and type_param == "recovery":
         else:
             try:
                 session = supabase.auth.set_session(access_token, access_token)
-                supabase.auth.update_user({"password": new_pw})
-                st.session_state.user = session.user
-                st.session_state.session = session.session
-                st.success("✅ Password updated successfully. You are now logged in.")
 
-                # ✅ Workaround: simulate query param clear by reloading base URL
-                st.markdown(
-                    """
-                    <meta http-equiv="refresh" content="2; url='https://gamificationinstructorapp.streamlit.app'" />
-                    """,
-                    unsafe_allow_html=True
-                )
-                st.stop()
+                if not session or not session.user:
+                    st.error("❌ Invalid or expired reset link. Please request a new one.")
+                else:
+                    update_result = supabase.auth.update_user({"password": new_pw})
+                    if hasattr(update_result, "error") and update_result.error:
+                        st.error(f"❌ Supabase error: {update_result.error.message}")
+                    else:
+                        st.session_state.user = session.user
+                        st.session_state.session = session.session
+                        st.success("✅ Password updated successfully. You are now logged in.")
+
+                        st.markdown(
+                            "<meta http-equiv='refresh' content='2;url=https://gamificationinstructorapp.streamlit.app' />",
+                            unsafe_allow_html=True,
+                        )
+                        st.stop()
             except Exception as e:
                 st.error(f"❌ Failed to reset password: {e}")
     st.stop()
@@ -88,20 +93,20 @@ else:
                 st.error("❌ Password does not meet the requirements.")
             else:
                 res = supabase.auth.sign_up({"email": email, "password": password})
-                if "error" in res.__dict__ and res.__dict__["error"]:
-                    st.error(f"❌ {res.__dict__['error'].message}")
+                if hasattr(res, "error") and res.error:
+                    st.error(f"❌ {res.error.message}")
                 else:
                     st.success("✅ Account created! Check your email to confirm before logging in.")
 
     elif mode == "Login":
         if st.button("Login"):
             res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-            if "error" in res.__dict__ and res.__dict__["error"]:
-                st.error(f"❌ {res.__dict__['error'].message}")
-            elif "session" in res.__dict__ and res.__dict__["session"]:
+            if hasattr(res, "error") and res.error:
+                st.error(f"❌ {res.error.message}")
+            elif hasattr(res, "session") and res.session:
                 st.success("✅ Logged in successfully!")
-                st.session_state.user = res.__dict__["user"].model_dump()
-                st.session_state.session = res.__dict__["session"]
+                st.session_state.user = res.user.model_dump()
+                st.session_state.session = res.session
                 st.rerun()
             else:
                 st.error("❌ Login failed. Unknown issue.")
