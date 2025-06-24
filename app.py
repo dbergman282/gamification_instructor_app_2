@@ -24,7 +24,7 @@ def password_valid(password: str) -> bool:
         re.search(r"[!@#$%^&*(),.?\":{}|<>]", password)
     )
 
-# ---------------- HANDLE RESET PASSWORD TOKEN ----------------
+# ---------------- HANDLE RESET PASSWORD FLOW ----------------
 query_params = st.query_params
 access_token = query_params.get("access_token", [None])[0]
 type_param = query_params.get("type", [None])[0]
@@ -47,7 +47,7 @@ if access_token and type_param == "recovery":
                 st.session_state.user = session.user
                 st.session_state.session = session.session
                 st.success("✅ Password updated successfully. You are now logged in.")
-                st.query_params.clear()  # Clear URL parameters
+                st.query_params.clear()
                 st.rerun()
             except Exception as e:
                 st.error(f"❌ Failed to reset password: {e}")
@@ -63,7 +63,7 @@ if st.session_state.user:
         st.session_state.session = None
         st.rerun()
 
-# ---------------- LOGIN / SIGN UP ----------------
+# ---------------- LOGIN / SIGN UP VIEW ----------------
 else:
     st.title("🔐 Welcome to the App")
 
