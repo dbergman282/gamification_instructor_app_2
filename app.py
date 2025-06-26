@@ -82,7 +82,10 @@ else:
             else:
                 res = supabase.auth.sign_up({"email": email, "password": password})
                 if res.error:
-                    st.error(f"❌ {res.error.message}")
+                    try:
+                        st.error(f"❌ {res.error.message}")
+                    except Exception:
+                        st.error("❌ Login failed. You may need to confirm your email first.")
                 else:
                     st.success("✅ Account created! Check your email to confirm before logging in.")
 
