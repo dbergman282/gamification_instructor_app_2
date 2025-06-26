@@ -108,8 +108,12 @@ else:
                 else:
                     st.error("❌ Login failed. Check email and password.")
             except Exception as e:
-                st.error("❌ Login error.")
-                st.exception(e)
+                error_message = str(e)
+                if "Email not confirmed" in error_message:
+                    st.error("❌ Email not confirmed. Please check your inbox and confirm your email before logging in.")
+                else:
+                    st.error("❌ Login error. Please try again.")
+
 
     # ---------------- RESET PASSWORD ----------------
     with st.expander("🔁 Forgot your password?"):
