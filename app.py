@@ -39,12 +39,14 @@ if access_token and type_param == "recovery":
             st.error("❌ Passwords do not match.")
         elif not password_valid(new_pw):
             st.error("❌ Password must have 8+ characters, a letter, a number, and a special character.")
+        elif len(access_token.split(".")) != 3:
+            st.error("❌ Invalid access token format.")
         else:
             try:
-                session_response = supabase.auth.set_session(access_token, access_token)
+                session = supabase.auth.set_session(access_token, access_token)
                 supabase.auth.update_user({"password": new_pw})
-                st.session_state.user = session_response.user
-                st.session_state.session = session_response.session
+                st.session_state.user = session.user
+                st.session_state.session = session.session
                 st.success("✅ Password updated successfully. You are now logged in.")
                 st.query_params.clear()
                 st.rerun()
@@ -80,27 +82,34 @@ else:
             if not password_valid(password):
                 st.error("❌ Password does not meet the requirements.")
             else:
-                res = supabase.auth.sign_up({"email": email, "password": password})
-                if res.error:
-                    try:
-                        st.error(f"❌ {res.error.message}")
-                    except Exception:
-                        st.error("❌ Login failed. You may need to confirm your email first.")
-                else:
-                    st.success("✅ Account created! Check your email to confirm before logging in.")
+                try:
+                    res = supabase.auth.sign_up({
+                        "email": email,
+                        "password": password
+                    })
+
+                    if hasattr(res, "user") and res.user:
+                        st.success("✅ Account created! Check your email to confirm before logging in.")
+                    else:
+                        st.error("❌ Sign-up failed. Please try again.")
+                except Exception as e:
+                    st.error("❌ Error during sign-up.")
+                    st.exception(e)
 
     elif mode == "Login":
         if st.button("Login"):
-            res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-            if res.error:
-                st.error(f"❌ {res.error.message}")
-            elif res.session:
-                st.success("✅ Logged in successfully!")
-                st.session_state.user = res.user.model_dump()
-                st.session_state.session = res.session
-                st.rerun()
-            else:
-                st.error("❌ Login failed. Unknown issue.")
+            try:
+                res = supabase.auth.sign_in_with_password({"email": email, "password": password})
+                if hasattr(res, "user") and res.user:
+                    st.success("✅ Logged in successfully!")
+                    st.session_state.user = res.user
+                    st.session_state.session = res.session
+                    st.rerun()
+                else:
+                    st.error("❌ Login failed. Check email and password.")
+            except Exception as e:
+                st.error("❌ Login error.")
+                st.exception(e)
 
     # ---------------- RESET PASSWORD ----------------
     with st.expander("🔁 Forgot your password?"):
@@ -111,9 +120,7 @@ else:
                     email=reset_email,
                     options={"redirect_to": "https://gamificationinstructorapp.streamlit.app"}
                 )
-                if res.error:
-                    st.error(f"❌ {res.error.message}")
-                else:
-                    st.success("✅ Check your email for the reset link.")
+                st.success("✅ Check your email for the reset link.")
             except Exception as e:
-                st.error(f"❌ Reset failed: {e}")
+                st.error("❌ Reset failed.")
+                st.exception(e)
