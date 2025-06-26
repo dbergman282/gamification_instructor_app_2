@@ -87,7 +87,7 @@ else:
     mode = st.radio("Choose an option:", ["Login", "Sign Up"])
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
-
+    
     if mode == "Sign Up":
         st.markdown("""
         🔐 **Password requirements:**
@@ -103,14 +103,17 @@ else:
                         "email": email,
                         "password": password
                     })
-
-                    if hasattr(res, "user") and res.user:
+    
+                    if hasattr(res, "error") and res.error:
+                        st.error(f"❌ {res.error.message}")
+                    elif hasattr(res, "user") and res.user:
                         st.success("✅ Account created! Check your email to confirm before logging in.")
                     else:
-                        st.error("❌ Sign-up failed. Please try again.")
+                        st.error("❌ Sign-up failed for an unknown reason.")
                 except Exception as e:
-                    st.error("❌ Error during sign-up.")
-                    st.exception(e)
+                    st.error("❌ Unexpected error during sign-up.")
+                    st.exception(e)  # You can comment this out in production
+
 
     elif mode == "Login":
         if st.button("Login"):
