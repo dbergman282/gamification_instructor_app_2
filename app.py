@@ -57,12 +57,11 @@ if access_token and type_param == "recovery":
 # ---------------- LOGGED IN VIEW ----------------
 if st.session_state.user:
     st.title("✅ You are logged in")
-    st.write(f"📧 Email: `{st.session_state.user['email']}`")
-
-    if st.button("Logout"):
-        st.session_state.user = None
-        st.session_state.session = None
-        st.rerun()
+    user = st.session_state.user
+    st.write(f"📧 Email: `{user.email}`")
+    st.write(f"🆔 ID: `{user.id}`")
+    st.write(f"👤 Role: `{user.role}`")
+    st.write(f"🕒 Created at: `{user.created_at}`"
 
 # ---------------- LOGIN / SIGN UP VIEW ----------------
 else:
