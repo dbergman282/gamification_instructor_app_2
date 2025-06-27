@@ -103,25 +103,15 @@ else:
                         "email": email,
                         "password": password
                     })
-    
-                    # This indicates the user already exists but hasn’t confirmed email
-                    if res.user and res.user.identities == []:
-                        st.warning("⚠️ This email is already registered but not confirmed. Check your inbox or reset your password.")
-                    elif res.user:
-                        st.success("✅ Account created! Check your email to confirm before logging in.")
-                    else:
-                        st.error("❌ Sign-up failed. Please try again.")
-    
+                    st.success("✅ Account created! Check your email to confirm before logging in.")
                 except Exception as e:
-                    # Try to parse useful messages if Supabase does throw one
                     err_msg = str(e)
-                    if "User already registered" in err_msg:
+                    if "User already registered" in err_msg or "email" in err_msg.lower():
                         st.error("❌ Email is already registered. Try logging in or resetting your password.")
                     else:
                         st.error("❌ Unexpected error during sign-up.")
-                        st.exception(e)  # Show full traceback only during dev
+                        st.exception(e)  # helpful during dev
     
-
 
 
     elif mode == "Login":
