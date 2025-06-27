@@ -99,19 +99,28 @@ else:
                 st.error("❌ Password does not meet the requirements.")
             else:
                 try:
-                    res = supabase.auth.sign_up({
+                    # Check if email already exists
+                    supabase.auth.sign_in_with_password({
                         "email": email,
                         "password": password
                     })
-                    st.success("✅ Account created! Check your email to confirm before logging in.")
+                    st.error("❌ This email is already registered and confirmed. Please log in or reset your password.")
                 except Exception as e:
-                    err_msg = str(e)
-                    if "User already registered" in err_msg or "email" in err_msg.lower():
-                        st.error("❌ Email is already registered. Try logging in or resetting your password.")
+                    if "Email not confirmed" in str(e):
+                        st.warning("⚠️ This email is already registered but not confirmed. Check your inbox or reset your password.")
                     else:
-                        st.error("❌ Unexpected error during sign-up.")
-                        st.exception(e)  # helpful during dev
+                        # Email not in use, proceed to create
+                        try:
+                            res = supabase.auth.sign_up({
+                                "email": email,
+                                "password": password
+                            })
+                            st.success("✅ Account created! Check your email to confirm before logging in.")
+                        except Exception as signup_error:
+                            st.error("❌ Error during sign-up.")
+                            st.exception(signup_error)
     
+        
 
 
     elif mode == "Login":
