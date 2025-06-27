@@ -2,6 +2,18 @@ import streamlit as st
 from supabase import create_client, Client
 import re
 
+st.markdown("""
+<script>
+  const hash = window.location.hash;
+  if (hash.startsWith("#access_token")) {
+    const query = hash.substring(1);  // remove the '#'
+    const newUrl = window.location.origin + window.location.pathname + "?" + query;
+    window.history.replaceState(null, "", newUrl);
+    window.location.reload();  // reload to make Streamlit detect the new query params
+  }
+</script>
+""", unsafe_allow_html=True)
+
 # 🔧 Supabase credentials from Streamlit secrets
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_ANON_KEY = st.secrets["SUPABASE_ANON_KEY"]
