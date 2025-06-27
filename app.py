@@ -25,6 +25,7 @@ def password_valid(password: str) -> bool:
     )
 
 # ---------------- HANDLE RESET PASSWORD FLOW ----------------
+# ---------------- HANDLE RESET PASSWORD FLOW ----------------
 query_params = st.query_params or {}
 access_token = query_params.get("access_token")
 type_param = query_params.get("type")
@@ -40,19 +41,20 @@ if access_token and type_param == "recovery":
         elif not password_valid(new_pw):
             st.error("❌ Password must have 8+ characters, a letter, a number, and a special character.")
         elif len(access_token.split(".")) != 3:
-            st.error("❌ Invalid access token format.")
+            st.error("❌ Invalid access token format. Please use the link sent to your email.")
         else:
             try:
-                session = supabase.auth.set_session(access_token, access_token)
+                session_response = supabase.auth.set_session(access_token, access_token)
                 supabase.auth.update_user({"password": new_pw})
-                st.session_state.user = session.user
-                st.session_state.session = session.session
+                st.session_state.user = session_response.user
+                st.session_state.session = session_response.session
                 st.success("✅ Password updated successfully. You are now logged in.")
                 st.query_params.clear()
                 st.rerun()
             except Exception as e:
                 st.error(f"❌ Failed to reset password: {e}")
     st.stop()
+
 
 # ---------------- LOGGED IN VIEW ----------------
 if st.session_state.user:
