@@ -149,7 +149,10 @@ else:
             try:
                 res = supabase.auth.reset_password_for_email(
                     email=reset_email,
-                    options={"redirect_to": "https://gamificationinstructorapp.streamlit.app"}
+                    options={
+                        "redirect_to": "https://gamificationinstructorapp.streamlit.app",
+                        "type": "recovery"
+                    }
                 )
                 st.success("✅ Check your email for the reset link.")
             except Exception as e:
