@@ -104,15 +104,20 @@ else:
                         "password": password
                     })
     
-                    if hasattr(res, "error") and res.error:
-                        st.error(f"❌ {res.error.message}")
-                    elif hasattr(res, "user") and res.user:
-                        st.success("✅ Account created! Check your email to confirm before logging in.")
+                    if res is None or getattr(res, "user", None) is None:
+                        st.error("❌ Sign-up failed. The email may already be registered.")
+                    elif res.user.identities == []:
+                        st.error("❌ This email is already registered but not confirmed. Please check your inbox.")
                     else:
-                        st.error("❌ Sign-up failed for an unknown reason.")
+                        st.success("✅ Account created! Check your email to confirm before logging in.")
+    
                 except Exception as e:
-                    st.error("❌ Unexpected error during sign-up.")
-                    st.exception(e)  # You can comment this out in production
+                    if "User already registered" in str(e):
+                        st.error("❌ Email is already registered. Try logging in or resetting your password.")
+                    else:
+                        st.error("❌ Unexpected error during sign-up.")
+                        st.exception(e)  # Optional: useful during dev
+
 
 
     elif mode == "Login":
