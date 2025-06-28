@@ -41,6 +41,7 @@ def password_valid(password: str) -> bool:
 query_params = st.query_params or {}
 access_token = query_params.get("access_token")
 type_param = query_params.get("type")
+refresh_token = query_params.get("refresh_token")
 
 if access_token and type_param == "recovery":
     st.title("🔒 Reset Your Password")
@@ -56,13 +57,18 @@ if access_token and type_param == "recovery":
             st.error("❌ Invalid access token format. Please use the link sent to your email.")
         else:
             try:
-                session_response = supabase.auth.set_session(access_token, access_token)
-                supabase.auth.update_user({"password": new_pw})
-                st.session_state.user = session_response.user
-                st.session_state.session = session_response.session
-                st.success("✅ Password updated successfully. You are now logged in.")
-                st.query_params.clear()
-                st.rerun()
+              session_response = supabase.auth.set_session(access_token, refresh_token)
+              
+              if session_response.user:
+                  supabase.auth.update_user({"password": new_pw})
+                  st.session_state.user = session_response.user
+                  st.session_state.session = session_response.session
+                  st.success("✅ Password updated successfully. You are now logged in.")
+                  st.query_params.clear()
+                  st.rerun()
+              else:
+                  st.error("❌ Invalid or expired token. Please request a new password reset link.")
+
             except Exception as e:
                 st.error(f"❌ Failed to reset password: {e}")
     st.stop()
