@@ -113,7 +113,7 @@ else:
                 res = supabase.auth.reset_password_for_email(
                     email=reset_email,
                     options={
-                        "redirect_to": "https://supabase-reset-ui.vercel.app/"
+                        "redirect_to": "https://supabase-reset-ui.vercel.app"
                     }
                 )
                 st.success("✅ Check your email for the reset link.")
