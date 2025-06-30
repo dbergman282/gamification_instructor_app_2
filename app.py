@@ -393,30 +393,44 @@ st.markdown(
 st.markdown(
     """
     <style>
+    /* Import Google Font */
     @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
 
-    html, body, [class*="css"]  {
+    html, body, [class*="css"] {
         font-family: 'Open Sans', sans-serif;
+        color: #264653;
     }
 
+    /* Headings */
     h1, h2, h3, h4 {
         color: #264653;
     }
 
+    /* Primary button styling */
     div.stButton > button {
-        background-color: #2a9d8f;
+        background-color: #2a9d8f;   /* Teal */
         color: white;
-        border-radius: 8px;
+        border-radius: 6px;
         padding: 0.5em 1.2em;
         border: none;
-    }
-    div.stButton > button:hover {
-        background-color: #21867a;
+        font-weight: 600;
+        transition: background-color 0.3s ease;
     }
 
+    div.stButton > button:hover {
+        background-color: #21867a;   /* Darker teal on hover */
+        color: white;
+    }
+
+    /* Streamlit expander styling */
+    .stExpanderHeader {
+        font-weight: 600;
+    }
+
+    /* Footer text */
     footer {
         text-align: center;
-        color: #999;
+        color: #999999;
         padding: 2rem 0 1rem 0;
         font-size: 0.85rem;
     }
@@ -424,5 +438,3 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-
