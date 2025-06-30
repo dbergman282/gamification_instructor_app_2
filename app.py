@@ -353,10 +353,24 @@ else:
 
 st.markdown(
     """
-    <hr style="margin-top: 50px; margin-bottom: 10px;">
-    <div style="text-align: center; color: gray; font-size: 0.8em;">
+    <style>
+    .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 30px;
+        background-color: #f0f0f0;
+        text-align: center;
+        font-size: 0.75em;
+        color: #888;
+        padding: 5px;
+    }
+    </style>
+    <div class="footer">
         © 2025 Gamification State LLC. All rights reserved.
     </div>
     """,
     unsafe_allow_html=True
 )
+
