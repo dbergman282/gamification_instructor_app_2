@@ -101,6 +101,14 @@ if st.session_state.user:
     st.title("✅ You are logged in")
     user = st.session_state.get("user")
 
+    res = supabase.auth.sign_in_with_password({...})
+    st.session_state.user = res.user
+    st.session_state.session = res.session
+    
+    # 🔑 Attach the JWT for all requests
+    supabase.auth.set_session(res.session.access_token, res.session.refresh_token)
+    st.write("Session access token:", st.session_state.session.access_token)
+
     if user is None:
         st.error("⚠️ No user found in session. Please log in again.")
     elif isinstance(user, dict):
