@@ -43,6 +43,11 @@ def show_create_class():
 
                 generated_code = generate_class_code(existing_codes)
 
+                st.write({
+                    "user_email": user_email,
+                    "class_name": course_name,
+                    "class_code": generated_code
+                })
                 # ✅ Insert new row into the correct table
                 insert_resp = supabase.table("classes").insert({
                     "user_email": user_email,
