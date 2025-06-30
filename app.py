@@ -41,7 +41,9 @@ def generate_class_code(existing_codes=None):
         code = ''.join(random.choices(chars, k=8))
         if existing_codes is None or code not in existing_codes:
             return code
-            
+
+# ------------------ CREATE CLASS VIEW ------------------
+
 def show_create_class():
     st.header("➕ Create New Class")
     st.info("Course names should be unique and should not duplicate a class you already created.")
@@ -51,72 +53,72 @@ def show_create_class():
     if st.button("Create"):
         if not course_name.strip():
             st.error("❌ Course name cannot be empty.")
-        else:
-            user_email = (
-                st.session_state.user.get("email")
-                if isinstance(st.session_state.user, dict)
-                else st.session_state.user.email
+            return  # Stop here if empty
+
+        # ✅ Safely get user email
+        user_email = (
+            st.session_state.user.get("email")
+            if isinstance(st.session_state.user, dict)
+            else getattr(st.session_state.user, "email", None)
+        )
+        if not user_email:
+            st.error("❌ No user email found — please log in again.")
+            return
+
+        # ✅ Attach JWT before insert
+        if st.session_state.session:
+            set_supabase_auth(
+                st.session_state.session.access_token,
+                st.session_state.session.refresh_token
             )
+            st.write("Session in state:", st.session_state.session)
+            st.write("Access Token:", st.session_state.session.access_token)
 
-            # ✅ Refresh the JWT just before the insert!
-            if st.session_state.session:
-                set_supabase_auth(
-                    st.session_state.session.access_token,
-                    st.session_state.session.refresh_token
-                )
-                st.write("Session in state:", st.session_state.session)
-                st.write("Access Token:", st.session_state.session.access_token)
+        # ✅ Check for duplicate name
+        response = supabase.table("classes").select("id").eq("user_email", user_email).eq("class_name", course_name).execute()
 
-            # Check for duplicate name
-            response = supabase.table("classes").select("id").eq("user_email", user_email).eq("class_name", course_name).execute()
+        if response.data and len(response.data) > 0:
+            st.error("❌ You already have a class with that name.")
+        else:
+            existing_codes_resp = supabase.table("classes").select("class_code").execute()
+            existing_codes = [row["class_code"] for row in existing_codes_resp.data]
+            generated_code = generate_class_code(existing_codes)
 
-            if response.data and len(response.data) > 0:
-                st.error("❌ You already have a class with that name.")
-            else:
-                existing_codes_resp = supabase.table("classes").select("class_code").execute()
-                existing_codes = [row["class_code"] for row in existing_codes_resp.data]
-                generated_code = generate_class_code(existing_codes)
+            # ✅ Debug output
+            st.write("DEBUG user_email:", user_email)
+            st.write("DEBUG course_name:", course_name)
+            st.write("DEBUG generated_code:", generated_code)
 
-                st.write("DEBUG user_email:", user_email)
-                st.write("DEBUG course_name:", course_name)
-                st.write("DEBUG generated_code:", generated_code)
-                                
-                st.write({
+            # ✅ Insert wrapped in try/except
+            try:
+                insert_resp = supabase.table("classes").insert({
                     "user_email": user_email,
                     "class_name": course_name,
                     "class_code": generated_code
-                })
+                }).execute()
 
-                try:
-                    insert_resp = supabase.table("classes").insert({
-                        "user_email": user_email,
-                        "class_name": course_name,
-                        "class_code": generated_code
-                    }).execute()
+                st.write("Insert Response:", insert_resp)
 
-                    st.write("Insert Response:", insert_resp)
+                if insert_resp.error:
+                    st.error("❌ Failed to create class.")
+                    st.error(insert_resp.error)
+                else:
+                    st.success("✅ Class created successfully!")
+                    st.write(f"🆔 **Your unique class code is:** `{generated_code}`")
 
-                    if insert_resp.error:
-                        st.error("❌ Failed to create class.")
-                        st.error(insert_resp.error)
-                    else:
-                        st.success(f"✅ Class created successfully!")
-                        st.write(f"🆔 **Your unique class code is:** `{generated_code}`")
-                except Exception as e:
-                    st.error("❌ Exception thrown during insert:")
-                    st.exception(e)
+            except Exception as e:
+                st.error("❌ Exception thrown during insert:")
+                st.exception(e)
 
     if st.button("🔙 Back"):
         st.session_state.page = None
         st.rerun()
-
 
 # ------------------ LOGGED IN VIEW ------------------
 
 if st.session_state.user:
     st.title("✅ You are logged in")
     user = st.session_state.get("user")
-    # supabase.auth.set_session(access_token, refresh_token)
 
     # ✅ Ensure your Supabase client is always using the JWT
     if st.session_state.session:
