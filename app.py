@@ -77,6 +77,10 @@ def show_create_class():
                 existing_codes = [row["class_code"] for row in existing_codes_resp.data]
                 generated_code = generate_class_code(existing_codes)
 
+                st.write("DEBUG user_email:", user_email)
+                st.write("DEBUG course_name:", course_name)
+                st.write("DEBUG generated_code:", generated_code)
+                                
                 st.write({
                     "user_email": user_email,
                     "class_name": course_name,
