@@ -18,14 +18,23 @@ st.set_page_config(
 # Load the image (adjust path if needed)
 logo = Image.open("gamification_state_logo.png")
 
-# Add some vertical spacing if you like
-st.write("")
-st.image(
-    logo,
-    caption=None,
-    use_column_width=False,
-    output_format="PNG",
-)
+# Center the logo in columns and control its display size
+col1, col2, col3 = st.columns([1, 2, 1])
+
+with col1:
+    st.write("")
+
+with col2:
+    st.image(
+        logo,
+        caption=None,
+        use_container_width=False,  # This line is fine because we’ll use width
+        output_format="PNG",
+        width=150  # 👉 Set the width in pixels, adjust as needed
+    )
+
+with col3:
+    st.write("")
 
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_ANON_KEY = st.secrets["SUPABASE_ANON_KEY"]
