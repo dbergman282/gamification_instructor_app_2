@@ -156,7 +156,7 @@ if st.session_state.user:
             st.session_state.session.access_token,
             st.session_state.session.refresh_token
         )
-        st.write("Access Token:", st.session_state.session.access_token)
+        # st.write("Access Token:", st.session_state.session.access_token)
 
     if user is None:
         st.error("⚠️ No user found in session. Please log in again.")
