@@ -21,15 +21,7 @@ st.set_page_config(
     layout="centered"
 )
 
-st.markdown(
-    """
-    <hr style="margin-top: 50px; margin-bottom: 10px;">
-    <div style="text-align: center; color: gray; font-size: 0.8em;">
-        © 2025 Gamification State LLC. All rights reserved.
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+
 
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_ANON_KEY = st.secrets["SUPABASE_ANON_KEY"]
@@ -357,3 +349,14 @@ else:
             except Exception as e:
                 st.error("❌ Reset failed.")
                 st.exception(e)
+
+
+st.markdown(
+    """
+    <hr style="margin-top: 50px; margin-bottom: 10px;">
+    <div style="text-align: center; color: gray; font-size: 0.8em;">
+        © 2025 Gamification State LLC. All rights reserved.
+    </div>
+    """,
+    unsafe_allow_html=True
+)
