@@ -98,11 +98,18 @@ def show_create_class():
                 )
                 st.write("DEBUG: user_id", user_id)
                 
+                # insert_resp = supabase.table("classes").insert({
+                #     "user_email": user_email,
+                #     "class_name": course_name,
+                #     "class_code": generated_code,
+                #     "user_id": user_id   # ✅ new secure column!
+                # }).execute()
+
                 insert_resp = supabase.table("classes").insert({
                     "user_email": user_email,
                     "class_name": course_name,
                     "class_code": generated_code,
-                    "user_id": user_id   # ✅ new secure column!
+                    "user_id": user_id   # ✅ pass the real UUID!
                 }).execute()
                 
                 # insert_resp = supabase.table("classes").insert({
