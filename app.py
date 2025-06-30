@@ -76,6 +76,8 @@ def show_create_class():
                     "class_code": generated_code
                 })
 
+                st.write("Client session in auth:", supabase.auth.session)
+
                 insert_resp = supabase.table("classes").insert({
                     "user_email": user_email,
                     "class_name": course_name,
