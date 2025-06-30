@@ -19,24 +19,47 @@ def show_create_class():
     st.header("➕ Create New Class")
     st.info("Course names should be unique and should not duplicate a class you already created.")
 
-    # Input for course name
     course_name = st.text_input("📚 Course Name")
 
-    # Button to create
     if st.button("Create"):
         if not course_name.strip():
             st.error("❌ Course name cannot be empty.")
         else:
-            # TODO: In real use, check if this course name already exists for this user.
-            # For now, just generate a code
-            generated_code = generate_class_code()
-            st.success(f"✅ Course created successfully!")
-            st.write(f"🆔 **Your unique class code is:** `{generated_code}`")
-            # You can store course_name and generated_code in your DB later
+            user_email = (
+                st.session_state.user.get("email")
+                if isinstance(st.session_state.user, dict)
+                else st.session_state.user.email
+            )
+
+            # Check if this user already has a class with this name
+            response = supabase.table("private.classes").select("id").eq("user_email", user_email).eq("class_name", course_name).execute()
+            if response.data and len(response.data) > 0:
+                st.error("❌ You already have a class with that name.")
+            else:
+                # Get existing codes for uniqueness
+                existing_codes_resp = supabase.table("private.classes").select("class_code").execute()
+                existing_codes = [row["class_code"] for row in existing_codes_resp.data]
+
+                generated_code = generate_class_code(existing_codes)
+
+                # Insert the new class
+                insert_resp = supabase.table("private.classes").insert({
+                    "user_email": user_email,
+                    "class_name": course_name,
+                    "class_code": generated_code
+                }).execute()
+
+                if insert_resp.error:
+                    st.error("❌ Failed to create class.")
+                    st.error(insert_resp.error)
+                else:
+                    st.success(f"✅ Class created successfully!")
+                    st.write(f"🆔 **Your unique class code is:** `{generated_code}`")
 
     if st.button("🔙 Back"):
         st.session_state.page = None
         st.rerun()
+
 
 # ------------------ INITIAL SETUP ------------------
 
