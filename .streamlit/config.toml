@@ -1,7 +1,7 @@
 [theme]
 base = "light"
-primaryColor = "#2a9d8f"
+primaryColor = "#0077b6"   # Blue button background
 backgroundColor = "#ffffff"
 secondaryBackgroundColor = "#f9f9f9"
-textColor = "#264653"
+textColor = "#ffffff"      # Button text is white
 font = "sans serif"
