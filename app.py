@@ -17,7 +17,7 @@ st.set_page_config(
 
 
 # Load logo
-logo = Image.open("your_logo_file.png")
+logo = Image.open("gamification_state_logo.png")
 col1, col2, col3 = st.columns([1,2,1])
 with col2:
     st.image(logo, width=200)
