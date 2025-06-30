@@ -10,33 +10,16 @@ from io import BytesIO
 
 # ------------------ INITIAL SETUP ------------------
 
-#st.set_page_config(page_title="Secure Login", page_icon="🔐")
-st.set_page_config(
-    page_title="Gamification State Instructor View",
-    page_icon="🕹️",
-    layout="centered"
-)
 
 # Load the image (adjust path if needed)
 logo = Image.open("gamification_state_logo.png")
 
-# Center the logo in columns and control its display size
-col1, col2, col3 = st.columns([1, 2, 1])
 
-with col1:
-    st.write("")
-
-with col2:
-    st.image(
-        logo,
-        caption=None,
-        use_container_width=False,  # This line is fine because we’ll use width
-        output_format="PNG",
-        width=150  # 👉 Set the width in pixels, adjust as needed
-    )
-
-with col3:
-    st.write("")
+st.set_page_config(
+    page_title="Gamification State",
+    page_icon=logo,
+    layout="centered"
+)
 
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_ANON_KEY = st.secrets["SUPABASE_ANON_KEY"]
