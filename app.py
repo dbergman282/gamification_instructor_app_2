@@ -64,6 +64,8 @@ def show_create_class():
             st.error("❌ No user email found — please log in again.")
             return
 
+        
+
         # ✅ Attach JWT before insert
         if st.session_state.session:
             set_supabase_auth(
@@ -94,7 +96,8 @@ def show_create_class():
                     if isinstance(st.session_state.user, dict)
                     else getattr(st.session_state.user, "id", None)
                 )
-
+                st.write("DEBUG: user_id", user_id)
+                
                 insert_resp = supabase.table("classes").insert({
                     "user_email": user_email,
                     "class_name": course_name,
