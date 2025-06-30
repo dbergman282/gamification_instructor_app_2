@@ -43,7 +43,6 @@ def generate_class_code(existing_codes=None):
             return code
 
 # ------------------ CREATE CLASS VIEW ------------------
-
 def show_create_class():
     st.header("➕ Create New Class")
     st.info("Course names should be unique and should not duplicate a class you already created.")
@@ -53,7 +52,7 @@ def show_create_class():
     if st.button("Create"):
         if not course_name.strip():
             st.error("❌ Course name cannot be empty.")
-            return  # Stop here if empty
+            return
 
         # ✅ Safely get user email
         user_email = (
@@ -84,12 +83,10 @@ def show_create_class():
             existing_codes = [row["class_code"] for row in existing_codes_resp.data]
             generated_code = generate_class_code(existing_codes)
 
-            # ✅ Debug output
             st.write("DEBUG user_email:", user_email)
             st.write("DEBUG course_name:", course_name)
             st.write("DEBUG generated_code:", generated_code)
 
-            # ✅ Insert wrapped in try/except
             try:
                 insert_resp = supabase.table("classes").insert({
                     "user_email": user_email,
