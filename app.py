@@ -112,7 +112,7 @@ def show_create_class():
         # ✅ Final secure insert
         try:
             st.success("✅ Insert will run with JWT attached")
-            st.stop()
+            # st.stop()
             insert_resp = supabase.table("classes").insert({
                 "user_email": user_email,
                 "class_name": course_name,
