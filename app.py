@@ -350,23 +350,29 @@ else:
                 st.error("❌ Reset failed.")
                 st.exception(e)
 
-
+# ✅ Add enough bottom padding so your content doesn't hide behind the footer
 st.markdown(
     """
     <style>
+    /* Make room for the fixed footer */
+    .reportview-container .main .block-container {
+        padding-bottom: 50px;
+    }
+
+    /* Sticky footer style */
     .footer {
         position: fixed;
-        bottom: 0;
         left: 0;
-        right: 0;
-        height: 30px;
+        bottom: 0;
+        width: 100%;
         background-color: #f0f0f0;
-        text-align: center;
-        font-size: 0.75em;
         color: #888;
-        padding: 5px;
+        text-align: center;
+        padding: 10px 0;
+        font-size: 0.8em;
     }
     </style>
+
     <div class="footer">
         © 2025 Gamification State LLC. All rights reserved.
     </div>
