@@ -5,6 +5,8 @@ import random
 import string
 from datetime import datetime, timezone, timedelta
 from PIL import Image
+import base64
+from io import BytesIO
 
 # ------------------ INITIAL SETUP ------------------
 
@@ -275,11 +277,16 @@ if st.session_state.user:
 # ------------------ LOGIN / SIGN UP VIEW ------------------
 
 else:
-    # Create inline container with flexbox
+    # Convert to base64
+    buffer = BytesIO()
+    logo.save(buffer, format="PNG")
+    img_str = base64.b64encode(buffer.getvalue()).decode()
+    
+    # Display with flexbox and proper HTML
     st.markdown(
         f"""
         <div style='display: flex; align-items: center;'>
-            <img src="data:image/png;base64,{st.image(logo, output_format="png", use_container_width=False).image_to_data_url()}" width="60" style='margin-right: 15px;'/>
+            <img src="data:image/png;base64,{img_str}" width="60" style='margin-right: 15px;'/>
             <h2 style='margin: 0;'>Gamification State Instructor Dashboard</h2>
         </div>
         """,
