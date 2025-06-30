@@ -275,7 +275,16 @@ if st.session_state.user:
 # ------------------ LOGIN / SIGN UP VIEW ------------------
 
 else:
-    st.title("🔐 Welcome to the App")
+    col1, col2 = st.columns([1, 10])
+
+    with col1:
+        st.image(logo, width=50)
+    
+    with col2:
+        st.markdown(
+            "<h1 style='vertical-align: middle;'>Gamification State Instructor Dashboard</h1>",
+            unsafe_allow_html=True
+        )
 
     mode = st.radio("Choose an option:", ["Login", "Sign Up"])
     email = st.text_input("Email")
