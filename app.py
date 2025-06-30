@@ -101,6 +101,7 @@ def show_create_class():
         existing_codes_resp = supabase.table("classes").select("class_code").execute()
         existing_codes = [row["class_code"] for row in existing_codes_resp.data]
         generated_code = generate_class_code(existing_codes)
+        generated_code = "TESTCODE1"
 
         st.write("DEBUG:", {
             "user_email": user_email,
