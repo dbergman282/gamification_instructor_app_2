@@ -10,7 +10,7 @@ from PIL import Image
 
 #st.set_page_config(page_title="Secure Login", page_icon="🔐")
 st.set_page_config(
-    page_title="Gamification State",
+    page_title="Gamification State Instructor View",
     page_icon="🕹️",
     layout="centered"
 )
