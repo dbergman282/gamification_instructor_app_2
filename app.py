@@ -79,8 +79,8 @@ def show_create_class():
             )
             st.write("Session User ID:", user_id)
             st.write("Access Token:", st.session_state.session.access_token)
-            st.success("✅ STOPPED after setting supabase auth — insert not run")
-            st.stop()  # 👈 THIS STOPS everything here — insert below will NOT run!
+            
+            st.success("✅ Insert will run with JWT attached")
 
         # ✅ The rest will NOT run if you hit st.stop()
         response = supabase.table("classes").select("id").eq("user_id", user_id).eq("class_name", course_name).execute()
