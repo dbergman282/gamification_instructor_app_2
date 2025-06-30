@@ -16,6 +16,7 @@ def set_supabase_auth(token: str, refresh_token: str):
     """Attach the JWT so Supabase knows the user is authenticated."""
     supabase.auth.set_session(token, refresh_token)
     supabase.postgrest.auth(token)   # ✅ Add this line!
+    st.write("✅ postgrest.auth(token) CALLED")
 
 # ------------------ SESSION STATE ------------------
 
