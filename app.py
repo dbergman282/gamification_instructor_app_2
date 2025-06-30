@@ -102,7 +102,7 @@ def show_create_class():
 if st.session_state.user:
     st.title("✅ You are logged in")
     user = st.session_state.get("user")
-    #supabase.auth.set_session(access_token, refresh_token)
+    # supabase.auth.set_session(access_token, refresh_token)
 
     # ✅ Ensure your Supabase client is always using the JWT
     if st.session_state.session:
