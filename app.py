@@ -4,10 +4,28 @@ import re
 import random
 import string
 from datetime import datetime, timezone, timedelta
+from PIL import Image
 
 # ------------------ INITIAL SETUP ------------------
 
-st.set_page_config(page_title="Secure Login", page_icon="🔐")
+#st.set_page_config(page_title="Secure Login", page_icon="🔐")
+st.set_page_config(
+    page_title="Gamification State",
+    page_icon="🕹️",
+    layout="centered"
+)
+
+
+# Load logo
+logo = Image.open("your_logo_file.png")
+col1, col2, col3 = st.columns([1,2,1])
+with col2:
+    st.image(logo, width=200)
+
+st.markdown(
+    "<h1 style='text-align: center; color: #0a1d3d;'>Gamification State</h1>",
+    unsafe_allow_html=True
+)
 
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_ANON_KEY = st.secrets["SUPABASE_ANON_KEY"]
