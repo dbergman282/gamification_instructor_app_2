@@ -41,9 +41,7 @@ def generate_class_code(existing_codes=None):
         code = ''.join(random.choices(chars, k=8))
         if existing_codes is None or code not in existing_codes:
             return code
-
-# ------------------ CREATE CLASS VIEW ------------------
-
+            
 def show_create_class():
     st.header("➕ Create New Class")
     st.info("Course names should be unique and should not duplicate a class you already created.")
@@ -59,6 +57,14 @@ def show_create_class():
                 if isinstance(st.session_state.user, dict)
                 else st.session_state.user.email
             )
+
+            # ✅ Refresh the JWT just before the insert!
+            if st.session_state.session:
+                set_supabase_auth(
+                    st.session_state.session.access_token,
+                    st.session_state.session.refresh_token
+                )
+                st.write("Access Token (from state):", st.session_state.session.access_token)
 
             # Check for duplicate name
             response = supabase.table("classes").select("id").eq("user_email", user_email).eq("class_name", course_name).execute()
@@ -76,26 +82,29 @@ def show_create_class():
                     "class_code": generated_code
                 })
 
-                st.write("Client session in auth:", supabase.auth.session)
+                try:
+                    insert_resp = supabase.table("classes").insert({
+                        "user_email": user_email,
+                        "class_name": course_name,
+                        "class_code": generated_code
+                    }).execute()
 
-                insert_resp = supabase.table("classes").insert({
-                    "user_email": user_email,
-                    "class_name": course_name,
-                    "class_code": generated_code
-                }).execute()
+                    st.write("Insert Response:", insert_resp)
 
-                st.write("Insert Response:", insert_resp)
-
-                if insert_resp.error:
-                    st.error("❌ Failed to create class.")
-                    st.error(insert_resp.error)
-                else:
-                    st.success(f"✅ Class created successfully!")
-                    st.write(f"🆔 **Your unique class code is:** `{generated_code}`")
+                    if insert_resp.error:
+                        st.error("❌ Failed to create class.")
+                        st.error(insert_resp.error)
+                    else:
+                        st.success(f"✅ Class created successfully!")
+                        st.write(f"🆔 **Your unique class code is:** `{generated_code}`")
+                except Exception as e:
+                    st.error("❌ Exception thrown during insert:")
+                    st.exception(e)
 
     if st.button("🔙 Back"):
         st.session_state.page = None
         st.rerun()
+
 
 # ------------------ LOGGED IN VIEW ------------------
 
