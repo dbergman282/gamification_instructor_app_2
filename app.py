@@ -42,10 +42,44 @@ if st.session_state.user:
         st.write(f"📧 Email: `{user.email}`")
         st.write(f"🆔 ID: `{user.id}`")
 
+    # 🔒 Logout button
     if st.button("Logout"):
         st.session_state.user = None
         st.session_state.session = None
+        st.session_state.page = None
         st.rerun()
+
+    # ------------------ MAIN MENU ------------------
+
+    if "page" not in st.session_state or st.session_state.page is None:
+        st.subheader("What would you like to do?")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if st.button("👀 View Classes"):
+                st.session_state.page = "view_classes"
+                st.rerun()
+
+        with col2:
+            if st.button("➕ Create New Class"):
+                st.session_state.page = "create_class"
+                st.rerun()
+
+    # ------------------ SECTION CONTENT ------------------
+
+    elif st.session_state.page == "view_classes":
+        st.header("👀 View Classes")
+        st.info("This is where you will add your logic to display classes.")
+        if st.button("🔙 Back"):
+            st.session_state.page = None
+            st.rerun()
+
+    elif st.session_state.page == "create_class":
+        st.header("➕ Create New Class")
+        st.info("This is where you will add your logic to create a new class.")
+        if st.button("🔙 Back"):
+            st.session_state.page = None
+            st.rerun()
 
 # ------------------ LOGIN / SIGN UP VIEW ------------------
 
