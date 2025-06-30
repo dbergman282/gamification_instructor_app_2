@@ -121,13 +121,12 @@ def show_create_class():
             }).execute()
 
             st.write("Insert Response:", insert_resp)
-
-            if insert_resp.error:
-                st.error("❌ Failed to create class.")
-                st.error(insert_resp.error)
-            else:
+            
+            if insert_resp.data and len(insert_resp.data) > 0:
                 st.success("✅ Class created successfully!")
                 st.write(f"🆔 **Your unique class code is:** `{generated_code}`")
+            else:
+                st.error("❌ Insert returned no data. Something went wrong.")
 
         except Exception as e:
             st.error("❌ Exception thrown during insert:")
