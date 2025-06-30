@@ -88,11 +88,25 @@ def show_create_class():
             st.write("DEBUG generated_code:", generated_code)
 
             try:
+
+                user_id = (
+                    st.session_state.user.get("id")
+                    if isinstance(st.session_state.user, dict)
+                    else getattr(st.session_state.user, "id", None)
+                )
+
                 insert_resp = supabase.table("classes").insert({
                     "user_email": user_email,
                     "class_name": course_name,
-                    "class_code": generated_code
+                    "class_code": generated_code,
+                    "user_id": user_id   # ✅ new secure column!
                 }).execute()
+                
+                # insert_resp = supabase.table("classes").insert({
+                #     "user_email": user_email,
+                #     "class_name": course_name,
+                #     "class_code": generated_code
+                # }).execute()
 
                 st.write("Insert Response:", insert_resp)
 
