@@ -72,7 +72,7 @@ def show_view_classes():
             st.session_state.session.access_token,
             st.session_state.session.refresh_token
         )
-        st.write("✅ postgrest.auth(token) CALLED for SELECT")
+        #st.write("✅ postgrest.auth(token) CALLED for SELECT")
 
     # ✅ Fetch this user's classes
     try:
