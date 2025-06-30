@@ -278,11 +278,11 @@ else:
     col1, col2 = st.columns([1, 10])
 
     with col1:
-        st.image(logo, width=50)
+        st.image(logo, width=100)
     
     with col2:
         st.markdown(
-            "<h1 style='vertical-align: middle;'>Gamification State Instructor Dashboard</h1>",
+            "<h2 style='vertical-align: middle;'>Gamification State Instructor Dashboard</h2>",
             unsafe_allow_html=True
         )
 
