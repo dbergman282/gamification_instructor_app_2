@@ -15,16 +15,16 @@ st.set_page_config(
     layout="centered"
 )
 
+# Load the image (adjust path if needed)
+logo = Image.open("gamification_seal.png")
 
-# Load logo
-logo = Image.open("gamification_state_logo.png")
-col1, col2, col3 = st.columns([1,2,1])
-with col2:
-    st.image(logo, width=200)
-
-st.markdown(
-    "<h1 style='text-align: center; color: #0a1d3d;'>Gamification State</h1>",
-    unsafe_allow_html=True
+# Add some vertical spacing if you like
+st.write("")
+st.image(
+    logo,
+    caption=None,
+    use_column_width=False,
+    output_format="PNG",
 )
 
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
