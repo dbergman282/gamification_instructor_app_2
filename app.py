@@ -31,23 +31,27 @@ def show_create_class():
                 else st.session_state.user.email
             )
 
-            # Check if this user already has a class with this name
-            response = supabase.table("private.classes").select("id").eq("user_email", user_email).eq("class_name", course_name).execute()
+            # ✅ Use the correct table name: "classes"
+            response = supabase.table("classes").select("id").eq("user_email", user_email).eq("class_name", course_name).execute()
+
             if response.data and len(response.data) > 0:
                 st.error("❌ You already have a class with that name.")
             else:
-                # Get existing codes for uniqueness
-                existing_codes_resp = supabase.table("private.classes").select("class_code").execute()
+                # ✅ Get existing codes to ensure unique class_code
+                existing_codes_resp = supabase.table("classes").select("class_code").execute()
                 existing_codes = [row["class_code"] for row in existing_codes_resp.data]
 
                 generated_code = generate_class_code(existing_codes)
 
-                # Insert the new class
-                insert_resp = supabase.table("private.classes").insert({
+                # ✅ Insert new row into the correct table
+                insert_resp = supabase.table("classes").insert({
                     "user_email": user_email,
                     "class_name": course_name,
                     "class_code": generated_code
                 }).execute()
+
+                # Debug output for you to see the response
+                st.write("Insert Response:", insert_resp)
 
                 if insert_resp.error:
                     st.error("❌ Failed to create class.")
