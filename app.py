@@ -275,16 +275,16 @@ if st.session_state.user:
 # ------------------ LOGIN / SIGN UP VIEW ------------------
 
 else:
-    col1, col2 = st.columns([1, 10])
-
-    with col1:
-        st.image(logo, width=100)
-    
-    with col2:
-        st.markdown(
-            "<h2 style='vertical-align: middle;'>Gamification State Instructor Dashboard</h2>",
-            unsafe_allow_html=True
-        )
+    # Create inline container with flexbox
+    st.markdown(
+        f"""
+        <div style='display: flex; align-items: center;'>
+            <img src="data:image/png;base64,{st.image(logo, output_format="png", use_container_width=False).image_to_data_url()}" width="60" style='margin-right: 15px;'/>
+            <h2 style='margin: 0;'>Gamification State Instructor Dashboard</h2>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     mode = st.radio("Choose an option:", ["Login", "Sign Up"])
     email = st.text_input("Email")
