@@ -4,16 +4,45 @@ import re
 import random
 import string
 
+# ------------------ INITIAL SETUP ------------------
+
+st.set_page_config(page_title="Secure Login", page_icon="🔐")
+
+SUPABASE_URL = st.secrets["SUPABASE_URL"]
+SUPABASE_ANON_KEY = st.secrets["SUPABASE_ANON_KEY"]
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+def set_supabase_auth(token: str, refresh_token: str):
+    """Attach the JWT so Supabase knows the user is authenticated."""
+    supabase.auth.set_session(token, refresh_token)
+
+# ------------------ SESSION STATE ------------------
+
+if "user" not in st.session_state:
+    st.session_state.user = None
+if "session" not in st.session_state:
+    st.session_state.session = None
+
+# ------------------ PASSWORD VALIDATION ------------------
+
+def password_valid(password: str) -> bool:
+    return (
+        len(password) >= 8 and
+        re.search(r"[A-Za-z]", password) and
+        re.search(r"\d", password) and
+        re.search(r"[!@#$%^&*(),.?\":{}|<>]", password)
+    )
+
+# ------------------ CLASS CODE GENERATOR ------------------
+
 def generate_class_code(existing_codes=None):
-    """
-    Generates an 8-character alphanumeric code (A-Z, 1-9, excluding 0 and O)
-    Ensures no collision with `existing_codes` if provided.
-    """
     chars = [c for c in string.ascii_uppercase if c != "O"] + [str(d) for d in range(1, 10)]
     while True:
         code = ''.join(random.choices(chars, k=8))
         if existing_codes is None or code not in existing_codes:
             return code
+
+# ------------------ CREATE CLASS VIEW ------------------
 
 def show_create_class():
     st.header("➕ Create New Class")
@@ -31,16 +60,14 @@ def show_create_class():
                 else st.session_state.user.email
             )
 
-            # ✅ Use the correct table name: "classes"
+            # Check for duplicate name
             response = supabase.table("classes").select("id").eq("user_email", user_email).eq("class_name", course_name).execute()
 
             if response.data and len(response.data) > 0:
                 st.error("❌ You already have a class with that name.")
             else:
-                # ✅ Get existing codes to ensure unique class_code
                 existing_codes_resp = supabase.table("classes").select("class_code").execute()
                 existing_codes = [row["class_code"] for row in existing_codes_resp.data]
-
                 generated_code = generate_class_code(existing_codes)
 
                 st.write({
@@ -48,14 +75,13 @@ def show_create_class():
                     "class_name": course_name,
                     "class_code": generated_code
                 })
-                # ✅ Insert new row into the correct table
+
                 insert_resp = supabase.table("classes").insert({
                     "user_email": user_email,
                     "class_name": course_name,
                     "class_code": generated_code
                 }).execute()
 
-                # Debug output for you to see the response
                 st.write("Insert Response:", insert_resp)
 
                 if insert_resp.error:
@@ -69,45 +95,19 @@ def show_create_class():
         st.session_state.page = None
         st.rerun()
 
-
-# ------------------ INITIAL SETUP ------------------
-
-st.set_page_config(page_title="Secure Login", page_icon="🔐")
-
-# Supabase credentials from Streamlit secrets
-SUPABASE_URL = st.secrets["SUPABASE_URL"]
-SUPABASE_ANON_KEY = st.secrets["SUPABASE_ANON_KEY"]
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
-
-# Session state setup
-if "user" not in st.session_state:
-    st.session_state.user = None
-if "session" not in st.session_state:
-    st.session_state.session = None
-
-# ------------------ PASSWORD VALIDATION ------------------
-
-def password_valid(password: str) -> bool:
-    return (
-        len(password) >= 8 and
-        re.search(r"[A-Za-z]", password) and
-        re.search(r"\d", password) and
-        re.search(r"[!@#$%^&*(),.?\":{}|<>]", password)
-    )
-
 # ------------------ LOGGED IN VIEW ------------------
 
 if st.session_state.user:
     st.title("✅ You are logged in")
     user = st.session_state.get("user")
 
-    res = supabase.auth.sign_in_with_password({...})
-    st.session_state.user = res.user
-    st.session_state.session = res.session
-    
-    # 🔑 Attach the JWT for all requests
-    supabase.auth.set_session(res.session.access_token, res.session.refresh_token)
-    st.write("Session access token:", st.session_state.session.access_token)
+    # ✅ Ensure your Supabase client is always using the JWT
+    if st.session_state.session:
+        set_supabase_auth(
+            st.session_state.session.access_token,
+            st.session_state.session.refresh_token
+        )
+        st.write("Access Token:", st.session_state.session.access_token)
 
     if user is None:
         st.error("⚠️ No user found in session. Please log in again.")
@@ -118,14 +118,11 @@ if st.session_state.user:
         st.write(f"📧 Email: `{user.email}`")
         st.write(f"🆔 ID: `{user.id}`")
 
-    # 🔒 Logout button
     if st.button("Logout"):
         st.session_state.user = None
         st.session_state.session = None
         st.session_state.page = None
         st.rerun()
-
-    # ------------------ MAIN MENU ------------------
 
     if "page" not in st.session_state or st.session_state.page is None:
         st.subheader("What would you like to do?")
@@ -140,8 +137,6 @@ if st.session_state.user:
             if st.button("➕ Create New Class"):
                 st.session_state.page = "create_class"
                 st.rerun()
-
-    # ------------------ SECTION CONTENT ------------------
 
     elif st.session_state.page == "view_classes":
         st.header("👀 View Classes")
@@ -200,6 +195,11 @@ else:
                     st.success("✅ Logged in successfully!")
                     st.session_state.user = res.user
                     st.session_state.session = res.session
+
+                    # ✅ Attach the JWT for all requests
+                    set_supabase_auth(res.session.access_token, res.session.refresh_token)
+
+                    st.write("Access Token:", res.session.access_token)
                     st.rerun()
                 else:
                     st.error("❌ Login failed. Check email and password.")
@@ -210,16 +210,14 @@ else:
                 else:
                     st.error("❌ Login error. Please try again.")
 
-    # ------------------ RESET PASSWORD ------------------
-
     with st.expander("🔁 Forgot your password?"):
         reset_email = st.text_input("Enter your email to reset password", key="reset_email_input")
         if st.button("Send Reset Link", key="send_reset_button"):
             try:
                 res = supabase.auth.reset_password_for_email(
                     email=reset_email,
-                    options = {
-                      "redirect_to": "https://gamificationstate-reset-password.vercel.app"
+                    options={
+                        "redirect_to": "https://gamificationstate-reset-password.vercel.app"
                     }
                 )
                 st.success("✅ Check your email for the reset link.")
