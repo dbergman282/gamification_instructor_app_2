@@ -1,6 +1,42 @@
 import streamlit as st
 from supabase import create_client, Client
 import re
+import random
+import string
+
+def generate_class_code(existing_codes=None):
+    """
+    Generates an 8-character alphanumeric code (A-Z, 1-9, excluding 0 and O)
+    Ensures no collision with `existing_codes` if provided.
+    """
+    chars = [c for c in string.ascii_uppercase if c != "O"] + [str(d) for d in range(1, 10)]
+    while True:
+        code = ''.join(random.choices(chars, k=8))
+        if existing_codes is None or code not in existing_codes:
+            return code
+
+def show_create_class():
+    st.header("➕ Create New Class")
+    st.info("Course names should be unique and should not duplicate a class you already created.")
+
+    # Input for course name
+    course_name = st.text_input("📚 Course Name")
+
+    # Button to create
+    if st.button("Create"):
+        if not course_name.strip():
+            st.error("❌ Course name cannot be empty.")
+        else:
+            # TODO: In real use, check if this course name already exists for this user.
+            # For now, just generate a code
+            generated_code = generate_class_code()
+            st.success(f"✅ Course created successfully!")
+            st.write(f"🆔 **Your unique class code is:** `{generated_code}`")
+            # You can store course_name and generated_code in your DB later
+
+    if st.button("🔙 Back"):
+        st.session_state.page = None
+        st.rerun()
 
 # ------------------ INITIAL SETUP ------------------
 
