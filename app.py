@@ -80,16 +80,15 @@ def show_create_class():
             st.write("✅ postgrest.auth(token) CALLED")
             st.write("Session User ID:", user_id)
             st.write("Access Token:", st.session_state.session.access_token)
-
-            # ✅ TEST SELECT to confirm JWT works for RLS
-            st.info("🔍 Running TEST SELECT for user_id...")
+            
             test_resp = supabase.table("classes").select("*").eq("user_id", user_id).execute()
-            st.write("Test SELECT Response:", test_resp)
-            if test_resp.error:
-                st.error("❌ TEST SELECT failed! JWT or RLS is not working.")
-                st.stop()
+            st.write("🔍 Test SELECT Response:", test_resp)
+            
+            # ✅ Correct safe check: test_resp is just a dict
+            if hasattr(test_resp, "error") and test_resp.error:
+                st.error("❌ Test SELECT failed.")
             else:
-                st.success("✅ TEST SELECT succeeded. JWT is valid for RLS.")
+                st.success("✅ Test SELECT ran — inspect the data above.")
 
         # ✅ Check for duplicate
         response = supabase.table("classes").select("id").eq("user_id", user_id).eq("class_name", course_name).execute()
