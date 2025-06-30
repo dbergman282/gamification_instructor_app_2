@@ -16,7 +16,7 @@ def set_supabase_auth(token: str, refresh_token: str):
     """Attach the JWT so Supabase knows the user is authenticated."""
     supabase.auth.set_session(token, refresh_token)
     supabase.postgrest.auth(token)   # ✅ Add this line!
-    st.write("✅ postgrest.auth(token) CALLED")
+    # st.write("✅ postgrest.auth(token) CALLED")
 
 # ------------------ SESSION STATE ------------------
 
@@ -85,12 +85,12 @@ def show_create_class():
                 st.session_state.session.access_token,
                 st.session_state.session.refresh_token
             )
-            st.write("✅ postgrest.auth(token) CALLED")
-            st.write("Session User ID:", user_id)
+            # st.write("✅ postgrest.auth(token) CALLED")
+            # st.write("Session User ID:", user_id)
 
             # 🧪 Run a test SELECT
             test_resp = supabase.table("classes").select("*").eq("user_id", user_id).execute()
-            st.write("🔍 Test SELECT Response:", test_resp.data)
+            # st.write("🔍 Test SELECT Response:", test_resp.data)
 
         # ✅ Check for duplicate class name
         dup_resp = supabase.table("classes").select("id").eq("user_id", user_id).eq("class_name", course_name).execute()
@@ -113,7 +113,7 @@ def show_create_class():
 
         # ✅ Final insert
         try:
-            st.success("✅ Insert will run with JWT attached")
+            # st.success("✅ Insert will run with JWT attached")
 
             insert_resp = supabase.table("classes").insert({
                 "user_email": user_email,
@@ -122,7 +122,7 @@ def show_create_class():
                 "user_id": user_id
             }).execute()
 
-            st.write("Insert Response:", insert_resp)
+            # st.write("Insert Response:", insert_resp)
 
             if insert_resp.data and len(insert_resp.data) > 0:
                 st.success("✅ Class created successfully!")
@@ -162,10 +162,10 @@ if st.session_state.user:
         st.error("⚠️ No user found in session. Please log in again.")
     elif isinstance(user, dict):
         st.write(f"📧 Email: `{user.get('email', 'N/A')}`")
-        st.write(f"🆔 ID: `{user.get('id', 'N/A')}`")
+        # st.write(f"🆔 ID: `{user.get('id', 'N/A')}`")
     else:
         st.write(f"📧 Email: `{user.email}`")
-        st.write(f"🆔 ID: `{user.id}`")
+        # st.write(f"🆔 ID: `{user.id}`")
 
     if st.button("Logout"):
         st.session_state.user = None
