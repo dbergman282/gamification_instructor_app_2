@@ -389,3 +389,40 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+
+st.markdown(
+    """
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+
+    html, body, [class*="css"]  {
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    h1, h2, h3, h4 {
+        color: #264653;
+    }
+
+    div.stButton > button {
+        background-color: #2a9d8f;
+        color: white;
+        border-radius: 8px;
+        padding: 0.5em 1.2em;
+        border: none;
+    }
+    div.stButton > button:hover {
+        background-color: #21867a;
+    }
+
+    footer {
+        text-align: center;
+        color: #999;
+        padding: 2rem 0 1rem 0;
+        font-size: 0.85rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
