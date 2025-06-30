@@ -64,7 +64,8 @@ def show_create_class():
                     st.session_state.session.access_token,
                     st.session_state.session.refresh_token
                 )
-                st.write("Access Token (from state):", st.session_state.session.access_token)
+                st.write("Session in state:", st.session_state.session)
+                st.write("Access Token:", st.session_state.session.access_token)
 
             # Check for duplicate name
             response = supabase.table("classes").select("id").eq("user_email", user_email).eq("class_name", course_name).execute()
