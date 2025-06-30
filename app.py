@@ -3,6 +3,7 @@ from supabase import create_client, Client
 import re
 import random
 import string
+from datetime import datetime, timezone, timedelta
 
 # ------------------ INITIAL SETUP ------------------
 
@@ -34,6 +35,57 @@ def password_valid(password: str) -> bool:
         re.search(r"\d", password) and
         re.search(r"[!@#$%^&*(),.?\":{}|<>]", password)
     )
+
+from datetime import datetime, timezone, timedelta
+
+def show_view_classes():
+    st.header("👀 Your Classes")
+
+    # ✅ Get user_id from session
+    user_id = (
+        st.session_state.user.get("id")
+        if isinstance(st.session_state.user, dict)
+        else getattr(st.session_state.user, "id", None)
+    )
+
+    if not user_id:
+        st.error("❌ No user ID found. Please log in again.")
+        return
+
+    # ✅ Attach JWT for SELECT
+    if st.session_state.session:
+        set_supabase_auth(
+            st.session_state.session.access_token,
+            st.session_state.session.refresh_token
+        )
+        st.write("✅ postgrest.auth(token) CALLED for SELECT")
+
+    # ✅ Fetch this user's classes
+    try:
+        resp = supabase.table("classes").select("*").eq("user_id", user_id).order("created_at", desc=True).execute()
+        classes = resp.data
+
+        if not classes:
+            st.info("ℹ️ You have no classes yet. Create one!")
+        else:
+            for cls in classes:
+                created_at_utc = datetime.fromisoformat(cls["created_at"].replace("Z", "+00:00"))
+                est_offset = timedelta(hours=-5)  # Or use pytz for daylight saving, but this is simple
+                created_at_est = (created_at_utc + est_offset).strftime("%Y-%m-%d %I:%M %p EST")
+
+                with st.expander(f"📚 {cls['class_name']} — Code: `{cls['class_code']}`"):
+                    st.write(f"🗓️ Created at: {created_at_est}")
+                    if st.button(f"🔍 View Details — `{cls['class_code']}`"):
+                        st.info("🚧 Coming soon: Student info for this class!")
+
+    except Exception as e:
+        st.error("❌ Failed to load classes.")
+        st.exception(e)
+
+    if st.button("🔙 Back"):
+        st.session_state.page = None
+        st.rerun()
+
 
 # ------------------ CLASS CODE GENERATOR ------------------
 
@@ -188,11 +240,7 @@ if st.session_state.user:
                 st.rerun()
 
     elif st.session_state.page == "view_classes":
-        st.header("👀 View Classes")
-        st.info("This is where you will add your logic to display classes.")
-        if st.button("🔙 Back"):
-            st.session_state.page = None
-            st.rerun()
+        show_view_classes()
 
     elif st.session_state.page == "create_class":
         show_create_class()
