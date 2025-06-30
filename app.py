@@ -104,12 +104,12 @@ def show_create_class():
 
         # ✅ Generate unique code
         generated_code = generate_class_code(existing_codes)
-        st.write("DEBUG:", {
-            "user_email": user_email,
-            "user_id": user_id,
-            "course_name": course_name,
-            "class_code": generated_code
-        })
+        # st.write("DEBUG:", {
+        #     "user_email": user_email,
+        #     "user_id": user_id,
+        #     "course_name": course_name,
+        #     "class_code": generated_code
+        # })
 
         # ✅ Final insert
         try:
@@ -248,7 +248,7 @@ else:
                     # ✅ Attach the JWT for all requests
                     set_supabase_auth(res.session.access_token, res.session.refresh_token)
 
-                    st.write("Access Token:", res.session.access_token)
+                    # st.write("Access Token:", res.session.access_token)
                     st.rerun()
                 else:
                     st.error("❌ Login failed. Check email and password.")
