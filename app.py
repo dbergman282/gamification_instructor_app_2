@@ -16,7 +16,7 @@ st.set_page_config(
 )
 
 # Load the image (adjust path if needed)
-logo = Image.open("gamification_seal.png")
+logo = Image.open("gamification_state_logo.png")
 
 # Add some vertical spacing if you like
 st.write("")
