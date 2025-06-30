@@ -71,23 +71,33 @@ def show_create_class():
             st.error("❌ No user info found — please log in again.")
             return
 
-        # ✅ Attach JWT before insert — TEST with STOP!
+        # ✅ Attach JWT before insert AND run TEST SELECT
         if st.session_state.session:
             set_supabase_auth(
                 st.session_state.session.access_token,
                 st.session_state.session.refresh_token
             )
+            st.write("✅ postgrest.auth(token) CALLED")
             st.write("Session User ID:", user_id)
             st.write("Access Token:", st.session_state.session.access_token)
-            
-            st.success("✅ Insert will run with JWT attached")
 
-        # ✅ The rest will NOT run if you hit st.stop()
+            # ✅ TEST SELECT to confirm JWT works for RLS
+            st.info("🔍 Running TEST SELECT for user_id...")
+            test_resp = supabase.table("classes").select("*").eq("user_id", user_id).execute()
+            st.write("Test SELECT Response:", test_resp)
+            if test_resp.error:
+                st.error("❌ TEST SELECT failed! JWT or RLS is not working.")
+                st.stop()
+            else:
+                st.success("✅ TEST SELECT succeeded. JWT is valid for RLS.")
+
+        # ✅ Check for duplicate
         response = supabase.table("classes").select("id").eq("user_id", user_id).eq("class_name", course_name).execute()
         if response.data and len(response.data) > 0:
             st.error("❌ You already have a class with that name.")
             return
 
+        # ✅ Generate unique code
         existing_codes_resp = supabase.table("classes").select("class_code").execute()
         existing_codes = [row["class_code"] for row in existing_codes_resp.data]
         generated_code = generate_class_code(existing_codes)
@@ -99,6 +109,7 @@ def show_create_class():
             "class_code": generated_code
         })
 
+        # ✅ Final secure insert
         try:
             insert_resp = supabase.table("classes").insert({
                 "user_email": user_email,
