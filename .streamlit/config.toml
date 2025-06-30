@@ -1,7 +1,7 @@
 [theme]
 base = "light"
-primaryColor = "#0077b6"   # Blue button background
+primaryColor = "#2a9d8f"  # Teal/green for buttons & highlights
 backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#f9f9f9"
-textColor = "#ffffff"      # Button text is white
+secondaryBackgroundColor = "#f5f7f8"
+textColor = "#264653"     # Deep slate for good readability
 font = "sans serif"
