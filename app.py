@@ -7,6 +7,7 @@ from datetime import datetime, timezone, timedelta
 from PIL import Image
 import base64
 from io import BytesIO
+import pytz  # pip install pytz if needed
 
 # ------------------ INITIAL SETUP ------------------
 
@@ -83,9 +84,17 @@ def show_view_classes():
             st.info("ℹ️ You have no classes yet. Create one!")
         else:
             for cls in classes:
-                created_at_utc = datetime.fromisoformat(cls["created_at"].replace("Z", "+00:00"))
-                est_offset = timedelta(hours=-5)  # Or use pytz for daylight saving, but this is simple
-                created_at_est = (created_at_utc + est_offset).strftime("%Y-%m-%d %I:%M %p EST")
+
+                # Parse UTC timestamp
+                created_at_utc = datetime.fromisoformat(cls["created_at"].replace("Z", "+00:00")).astimezone(pytz.utc)
+                
+                # Convert to US/Eastern, which handles DST automatically
+                eastern = pytz.timezone("US/Eastern")
+                created_at_est = created_at_utc.astimezone(eastern).strftime("%Y-%m-%d %I:%M %p %Z")
+                
+                #created_at_utc = datetime.fromisoformat(cls["created_at"].replace("Z", "+00:00"))
+                #est_offset = timedelta(hours=-5)  # Or use pytz for daylight saving, but this is simple
+                #created_at_est = (created_at_utc + est_offset).strftime("%Y-%m-%d %I:%M %p EST")
 
                 with st.expander(f"📚 {cls['class_name']} — Code: `{cls['class_code']}`"):
                     st.write(f"🗓️ Created at: {created_at_est}")
