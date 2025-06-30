@@ -71,7 +71,7 @@ def show_create_class():
             st.error("❌ No user info found — please log in again.")
             return
 
-        # ✅ Attach JWT before insert
+        # ✅ Attach JWT before insert — TEST with STOP!
         if st.session_state.session:
             set_supabase_auth(
                 st.session_state.session.access_token,
@@ -79,14 +79,15 @@ def show_create_class():
             )
             st.write("Session User ID:", user_id)
             st.write("Access Token:", st.session_state.session.access_token)
+            st.success("✅ STOPPED after setting supabase auth — insert not run")
+            st.stop()  # 👈 THIS STOPS everything here — insert below will NOT run!
 
-        # ✅ Check for duplicate
+        # ✅ The rest will NOT run if you hit st.stop()
         response = supabase.table("classes").select("id").eq("user_id", user_id).eq("class_name", course_name).execute()
         if response.data and len(response.data) > 0:
             st.error("❌ You already have a class with that name.")
             return
 
-        # ✅ Generate unique code
         existing_codes_resp = supabase.table("classes").select("class_code").execute()
         existing_codes = [row["class_code"] for row in existing_codes_resp.data]
         generated_code = generate_class_code(existing_codes)
@@ -98,13 +99,12 @@ def show_create_class():
             "class_code": generated_code
         })
 
-        # ✅ Final secure insert
         try:
             insert_resp = supabase.table("classes").insert({
                 "user_email": user_email,
                 "class_name": course_name,
                 "class_code": generated_code,
-                "user_id": user_id   # ✅ Pass real UUID!
+                "user_id": user_id
             }).execute()
 
             st.write("Insert Response:", insert_resp)
@@ -123,6 +123,7 @@ def show_create_class():
     if st.button("🔙 Back"):
         st.session_state.page = None
         st.rerun()
+
 
 
 # ------------------ LOGGED IN VIEW ------------------
