@@ -111,11 +111,7 @@ if st.session_state.user:
             st.rerun()
 
     elif st.session_state.page == "create_class":
-        st.header("➕ Create New Class")
-        st.info("This is where you will add your logic to create a new class.")
-        if st.button("🔙 Back"):
-            st.session_state.page = None
-            st.rerun()
+        show_create_class()
 
 # ------------------ LOGIN / SIGN UP VIEW ------------------
 
